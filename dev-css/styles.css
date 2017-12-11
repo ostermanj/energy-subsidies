@@ -1,0 +1,17 @@
+.d3-chart {
+    border: 1px solid cyan;
+}
+
+.d3-chart svg {
+    border: 1px solid yellow;
+}
+
+.flex {
+    display: flex;
+    justify-content: space-between;
+}
+
+.d3-chart svg path {
+    stroke: black;
+    fill: none;
+}
