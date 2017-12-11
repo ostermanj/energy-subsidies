@@ -1,14 +1,16 @@
 (function(){  
 "use strict"; 
-    
+    function cleanString(str){
+        return str.replace(/_/g,' ');
+    }
     const model = {
         init(){ // SHOULD THIS STUFF BE IN CONTROLLER?
             this.dataPromises = [];
             this.nestBy = ['category','series'];
             var sheetID = '1_G9HsJbxRBd7fWTF51Xr8lpxGxxImVcc-rTIaQbEeyA',
-                tabs = ['Sheet1'];
+                tabs = ['Sheet1','dictionary'];
 
-            tabs.forEach(each => {
+            tabs.forEach((each, i) => {
                 var promise = new Promise((resolve,reject) => {
                     d3.json('https://sheets.googleapis.com/v4/spreadsheets/' + sheetID + '/values/' + each + '?key=AIzaSyDD3W5wJeJF2esffZMQxNtEl9tt-OfgSq4', (error,data) => { // columns A through I
                         if (error) {
@@ -16,14 +18,15 @@
                             throw error;
                         }
                         var values = data.values;
-                        console.log(values); 
-                        resolve(this.returnKeyValues(values, model.nestBy, true)); 
+                        console.log(values);
+                        var nestType = each === 'dictionary' ? 'object' : 'series';
+                        resolve(this.returnKeyValues(values, model.nestBy, true, nestType, i)); 
                     });
                 });
                 this.dataPromises.push(promise);
             });
-
-            return Promise.all(this.dataPromises);
+console.log(this.dataPromises);
+            return Promise.all([...this.dataPromises]);
         },
         summarizeData(){
             this.summaries = [];
@@ -71,7 +74,7 @@
                 return rtn;
             }, d3.nest());
         },       
-        returnKeyValues(values, nestBy, coerce = false, nestType = 'series'){ // nestBy = string or array of field(s) to nest by, or a custom function, or an array of strings or functions;
+        returnKeyValues(values, nestBy, coerce = false, nestType = 'series', tabIndex = 0){ // nestBy = string or array of field(s) to nest by, or a custom function, or an array of strings or functions;
                                                                               // coerce = BOOL coerce to num or not
                                                                               // nestType = object or series nest (d3)
             
@@ -80,8 +83,9 @@
               acc[values[0][i]] = coerce === true ? isNaN(+cur) || cur === '' ? cur : +cur : cur; // 3. // acc is an object , key is corresponding value from row 0, value is current value of array
                 return acc;                                        // test for empty strings before coercing bc +'' => 0
             }, {}));
-            model.unnested = unnested;
-            window.unnested = unnested; // REMOVE
+            if ( tabIndex === 0 ) {
+                model.unnested = unnested;
+            }           
             if ( !nestBy ){
                 return unnested;
             } else {
@@ -108,13 +112,16 @@
     const view = {
         init(){
             this.margins = { // default values ; can be set be each SVGs DOM dataset (html data attributes)
-                top:5,
+                top:20,
                 right:15,
                 bottom:15,
-                left:25
+                left:35
             };
             this.activeField = 'pb25l';
             this.setupCharts();
+        },
+        label(key){
+            return model.dictionary.find(each => each.key === key).label;
         },
         setupCharts(){ 
             var chartDivs = d3.selectAll('.d3-chart');
@@ -161,7 +168,7 @@ console.log(model.summaries);
                 var minX = 2015,
                     maxX = 2045,
                     minY = model.summaries[0][datum.key][view.activeField + '_value'].min < 0 ? model.summaries[0][datum.key][view.activeField + '_value'].min : 0,
-                    maxY = model.summaries[0][datum.key][view.activeField + '_value'].max,
+                    maxY = model.summaries[0][datum.key][view.activeField + '_value'].max > Math.abs(minY / 2) ? model.summaries[0][datum.key][view.activeField + '_value'].max : Math.abs(minY / 2),
                     parseTime = d3.timeParse('%Y'),
                     x = d3.scaleTime().range([0, width]).domain([parseTime(minX),parseTime(maxX)]),
                     y = d3.scaleLinear().range([height, 0]).domain([minY,maxY]);
@@ -171,7 +178,7 @@ console.log(model.summaries);
 
             /* HEADINGS */
                 chartDiv.append('p')
-                    .html(d => '<strong>' + d.key + '</strong>');
+                    .html(d => '<strong>' + view.label(d.key) + '</strong>');
 
                 /* SVGS */
                 
@@ -189,15 +196,17 @@ console.log(model.summaries);
                     .attr('width', config.eachWidth)
                     .attr('height', height + marginTop + marginBottom)
                     .append('g')
-                        .attr('transform', `translate(${marginLeft},${marginTop})`);
+                    .attr('transform', `translate(${marginLeft},${marginTop})`);
+                    
                 
                 var valueline =  d3.line()
                         .x(d => {console.log(d); return x(parseTime(d.year)); })
                         .y(d => y(d[view.activeField + '_value']) );
 
-                SVGs.each(function(){
+                SVGs.each(function(d,i,array){
                     var SVG = d3.select(this);
                     var data = SVG.data();
+                    var units;
                     console.log(data);
                     var seriesGroups = SVG
                         .selectAll('series-groups')
@@ -214,21 +223,39 @@ console.log(model.summaries);
                         })
                         .enter().append('path')
                         .attr('class', () => {
-                            return 'line line-' + lineIndex++;
+                            return 'line line-' + lineIndex;
 
                         })
-                        .attr('d', function(d){
+                        .attr('d', (d,j) => {
+                            units = d.values[1].units;
+                            console.log(i, this, j);
                             console.log(d, d.key, datum.key);
                             console.log(scaleInstruct);
                             if ( scaleInstruct.indexOf(d.key) !== -1 ){
                                 console.log(model.summaries);
                                 minY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].min < 0 ? model.summaries[1][datum.key][d.key][view.activeField + '_value'].min : 0;
-                                maxY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].max;
+                                maxY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].max > Math.abs(minY / 2) ? model.summaries[1][datum.key][d.key][view.activeField + '_value'].max : Math.abs(minY / 2);
                                 x = d3.scaleTime().range([0, width]).domain([parseTime(minX),parseTime(maxX)]);
                                 y = d3.scaleLinear().range([height, 0]).domain([minY,maxY]);
+                                if ( i !== 0 && j === 0 ) {
+                                    addYAxis.call(this,'', true);
+                                } 
+                            } else if ( i !== 0 && j === 0 ) {
+                                 addYAxis.call(this,'repeated');
                             }
                             d.values.unshift({year:2015,[view.activeField + '_value']:0});
                             return valueline(d.values);
+                        });
+
+                    /* series labels */
+
+                    seriesGroups.append('text')
+                        .attr('class', () => 'series-label series-' + lineIndex++)
+                        .attr('transform', () => `translate(${width},-5)`)
+                        .attr('text-anchor', 'end')
+                        .html(d => {
+                            console.log(d);
+                            return view.label(d[0].key); // if grouped series, will need to iterate over all indexes
                         });
 
                     /* X AXIS */
@@ -237,10 +264,26 @@ console.log(model.summaries);
                           .attr('transform', 'translate(0,' + y(0) + ')')
                           .attr('class', 'axis x-axis')
                           .call(d3.axisBottom(x).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).tickValues([parseTime(2025),parseTime(2035),parseTime(2045)]));
+                          console.log(d,i,array,this);
+                   if ( i === 0 ) { // i here is from the SVG.each loop. append yAxis to all first SVGs of chartDiv
+                        addYAxis.call(this, '', true);
+                    }
+                    function addYAxis(repeated = '', showUnits = false){
+                        /* jshint validthis: true */ /* <- comment keeps jshint from falsely warning that
+                                                           `this` will be undefined. the .call() method
+                                                           defines `this` */
+                        d3.select(this).append('g')
+                          .attr('class', () => 'axis y-axis ' + repeated)
+                          .call(d3.axisLeft(y).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(5));
 
-                   SVG.append('g')
-                      .attr('class', 'axis y-axis')
-                      .call(d3.axisLeft(y).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(4));
+                        if ( showUnits ) {
+                        
+                        d3.select(this).append('text')
+                          .attr('class', 'units')
+                          .attr('transform', () => `translate(-${marginLeft},-${marginTop - 10})`)
+                          .text(() => cleanString(units));
+                        }
+                    }
 
                 });
 
@@ -269,10 +312,11 @@ console.log(model.summaries);
             console.log('controller init');
             model.init().then(values => {
                 model.data = values[0];
+                model.dictionary = values[1].undefined.undefined;
+                console.log(model.dictionary);
                 console.log(model.data);
                 model.summarizeData();
                 view.init();
-                console.log(model.summaries);
             });
         }
 

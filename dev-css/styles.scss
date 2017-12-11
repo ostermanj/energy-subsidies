@@ -10,6 +10,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
 .flex {
     display: flex;
     justify-content: flex-start;
+    flex-wrap: wrap;
 }
 
 .d3-chart {
@@ -33,6 +34,19 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         }
         text {
             font-family: $serif;
+            &.units, &.series-label {
+                font-size: 11px;
+                fill: $dark_gray;
+            }
+            &.series-0 {
+                fill: $blue;
+            }
+             &.series-1 {
+                fill: $green;
+            }
+             &.series-2 {
+                fill: $gold;
+            }
         }
         .axis {
             line, path {
@@ -40,6 +54,9 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
             }
             text {
                 fill: $a11y_gray;
+            }
+            &.repeated path.domain {
+                display:none;
             }
 
         }
