@@ -1,4 +1,4 @@
 node_modules/
-css/
+
 .sass-cache/
-*.css*
+dev-css/*.css*
