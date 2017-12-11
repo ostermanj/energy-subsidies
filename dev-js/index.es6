@@ -148,16 +148,20 @@ console.log(this.dataPromises);
                     console.log(seriesGroups);
                     return seriesGroups;
                 }
-                var config = this.dataset,
-                    scaleInstruct = config.resetScale ? JSON.parse(config.resetScale) : 'none',
+                var thisChartDiv = this;
+                var config = this.dataset;
+                var scaleInstruct = config.resetScale ? JSON.parse(config.resetScale) : 'none',
                     lineIndex = 0,
-                    marginTop = config.marginTop || view.margins.top,
-                    marginRight = config.marginRight || view.margins.right,
-                    marginBottom = config.marginBottom || view.margins.bottom,
-                    marginLeft = config.marginLeft || view.margins.left,
-                    width = config.eachWidth - marginLeft - marginRight,
+                    seriesIndex = 0,
+                    marginTop = +config.marginTop || view.margins.top,
+                    marginRight = +config.marginRight || view.margins.right,
+                    marginBottom = +config.marginBottom || view.margins.bottom,
+                    marginLeft = +config.marginLeft || view.margins.left;
+                if ( !config.marginRight && config.directLabel ){
+                    marginRight = 45;
+                }
+                var width = config.eachWidth - marginLeft - marginRight,
                     height = config.eachHeight ? config.eachHeight - marginTop - marginBottom : config.eachWidth / 2 - marginTop - marginBottom;
-
                 var datum = model.data.find(each => each.key === config.category);
                 console.log(datum);
                 var chartDiv = d3.select(this)
@@ -223,7 +227,7 @@ console.log(model.summaries);
                         })
                         .enter().append('path')
                         .attr('class', () => {
-                            return 'line line-' + lineIndex;
+                            return 'line line-' + lineIndex++;
 
                         })
                         .attr('d', (d,j) => {
@@ -245,18 +249,35 @@ console.log(model.summaries);
                             }
                             d.values.unshift({year:2015,[view.activeField + '_value']:0});
                             return valueline(d.values);
+                        })
+                        .each(d => {
+                           // var data = d3.select(this).data();
+                            console.log(thisChartDiv);
+                            if (config.directLabel){
+                                console.log('directlabel');
+                                SVG.append('text')
+                                    .attr('class', () => 'series-label series-' + seriesIndex++)
+                                    .html(() => '<tspan x="0">' + view.label(d.key).replace(/\\n/g,'</tspan><tspan x="0" dy="1.2em">') + '</tspan>')
+                                    .attr('transform', () => `translate(${width + 3},${y(d.values[d.values.length - 1][view.activeField + '_value']) + 3})`);
+                            }
                         });
+
+
+
 
                     /* series labels */
 
-                    seriesGroups.append('text')
-                        .attr('class', () => 'series-label series-' + lineIndex++)
-                        .attr('transform', () => `translate(${width},-5)`)
-                        .attr('text-anchor', 'end')
+                   /* seriesGroups.append('text')
+                        .attr('class', () => 'series-label')
+                        .attr('transform', () => `translate(0,${height + marginBottom})`)
                         .html(d => {
                             console.log(d);
-                            return view.label(d[0].key); // if grouped series, will need to iterate over all indexes
-                        });
+                            return d.reduce((acc,cur) => {
+                                return acc + '<tspan class="series-' + lineIndex++ + '">' + view.label(cur.key) + '</tspan>';
+                            },'');
+                            
+                            //return view.label(d[0].key); // if grouped series, will need to iterate over all indexes
+                        }); */
 
                     /* X AXIS */
 

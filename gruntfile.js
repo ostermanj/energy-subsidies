@@ -67,7 +67,7 @@ module.exports = function(grunt){
                 files: grunt.file.expandMapping(['*.js','!min.js'], 'js/', {
                     cwd: 'dev-js',
                     rename: function(destBase, destPath) {
-                        return destBase+destPath.replace('.js', '.min.js'); 
+                        return destBase+destPath.replace('.js', '.js'); 
                     }
                 }),
                 options: {
