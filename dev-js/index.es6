@@ -50,7 +50,7 @@
                 nestByArray.pop();
             }
         }, 
-        
+
         nestPrelim(nestByArray){
             // recursive  nesting function
             console.log(nestByArray);
@@ -109,8 +109,8 @@
         init(){
             this.margins = { // default values ; can be set be each SVGs DOM dataset (html data attributes)
                 top:5,
-                right:10,
-                bottom:10,
+                right:15,
+                bottom:15,
                 left:10
             };
             this.activeField = 'pb25l';
@@ -122,21 +122,24 @@
             chartDivs.each(function(d,i,array) { // TO DO differentiate chart types from html dataset
                 function groupSeries(data){
                     var groups;
-
+                    var instruct = JSON.parse(config.seriesGroup);
                     console.log(data);
-                    if ( Array.isArray( JSON.parse(config.seriesGroup) ) ){
+                    if ( Array.isArray( instruct ) ) {
                         groups = [];
                         JSON.parse(config.seriesGroup).forEach(group => {
                             console.log(group);
                             groups.push(data.filter(series => group.indexOf(series.key) !== -1));
                         });
-                    } else {
+                    } else if ( instruct === 'none' ) {
                         groups = data.map(each => [each]);
+                    } else if ( instruct === 'all' ) {
+                        groups = [data.map(each => each)];
                     }
                     console.log(groups);
                     return groups;
                 }
                 console.log(d,i,array);
+                var lineIndex = 0;
                 var config = this.dataset,
                     marginTop = config.marginTop || view.margins.top,
                     marginRight = config.marginRight || view.margins.right,
@@ -167,17 +170,17 @@
                 chartDiv.append('p')
                     .html(d => '<strong>' + d.key + '</strong>');
 
-            /* SVGS */
-            var dat = config.seriesGroup; 
-            console.log(dat);
-            console.log(JSON.parse(dat));
-            var SVGs;    
-            var svgContainer = chartDiv.append('div')
-                    .attr('class','flex');
+                /* SVGS */
+                var dat = config.seriesGroup; 
+                console.log(dat);
+                console.log(JSON.parse(dat));
+                var SVGs;    
+                var svgContainer = chartDiv.append('div')
+                        .attr('class','flex');
                 
                 SVGs = svgContainer.selectAll('SVGs')
-                    .data(d => {
-                        
+                    .data((d,i,array) => {
+                            console.log(d,i,array);
                             return groupSeries(d.values);
                         
                     })
@@ -192,12 +195,14 @@
                         .y(d => y(d[view.activeField + '_value']) );
 
                 SVGs.each(function(){
-                    var data = d3.select(this).data();
-                    console.log(this, data);
-                    var seriesGroups = d3.select(this)
+                    var SVG = d3.select(this);
+                    var data = SVG.data();
+                    var seriesGroups = SVG
                         .selectAll('series-groups')
                         .data(data)
                         .enter().append('g');
+
+                    /* PATHS */
 
                     seriesGroups
                         .selectAll('series')
@@ -206,12 +211,23 @@
                             return d;
                         })
                         .enter().append('path')
-                        .attr('class', 'line')
+                        .attr('class', () => {
+                            return 'line line-' + lineIndex++;
+
+                        })
                         .attr('d', function(d){
                             console.log(d);
                             d.values.unshift({year:2015,[view.activeField + '_value']:0});
                             return valueline(d.values);
                         });
+
+                    /* X AXIS */
+
+                    SVG.append('g')
+                          .attr('transform', 'translate(0,' + y(0) + ')')
+                          .attr('class', 'axis x-axis')
+                          .call(d3.axisBottom(x).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).tickValues([parseTime(2025),parseTime(2035),parseTime(2045)]));
+
                 });
 
                    // set data to d[0] and then append lines

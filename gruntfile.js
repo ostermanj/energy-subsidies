@@ -118,8 +118,8 @@ module.exports = function(grunt){
                  ]
             },
             dist: {
-                 src: 'dev-css/index.css',
-                dest: 'css/index.css'
+                 src: 'dev-css/styles.css',
+                dest: 'css/styles.css'
             }
         }
     });

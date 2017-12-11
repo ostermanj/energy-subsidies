@@ -1,0 +1,49 @@
+//colors
+$dark_gray: #58585b;
+$a11y_gray: #767676;
+$blue: #041937;
+$green: #527E5A;
+$gold: #C99140;
+$serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
+
+
+.flex {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.d3-chart {
+    & .line {
+        stroke-width: 2px;
+        &.line-0 {
+            stroke: $blue;
+        }
+        &.line-1 {
+            stroke: $green;
+        }
+        &.line-2 {
+            stroke: $gold;
+        }
+    }
+    svg {
+        path {
+            fill: none;
+            
+
+        }
+        text {
+            font-family: $serif;
+        }
+        .axis {
+            line, path {
+                stroke: $a11y_gray;
+            }
+            text {
+                fill: $a11y_gray;
+            }
+
+        }
+    }
+}
+
+
