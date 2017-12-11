@@ -111,7 +111,7 @@
                 top:5,
                 right:15,
                 bottom:15,
-                left:10
+                left:25
             };
             this.activeField = 'pb25l';
             this.setupCharts();
@@ -119,28 +119,31 @@
         setupCharts(){ 
             var chartDivs = d3.selectAll('.d3-chart');
 
-            chartDivs.each(function(d,i,array) { // TO DO differentiate chart types from html dataset
+            chartDivs.each(function() { // TO DO differentiate chart types from html dataset
                 function groupSeries(data){
-                    var groups;
-                    var instruct = JSON.parse(config.seriesGroup);
+                    var seriesGroups;
+                    var groupsInstruct = config.seriesGroup ? JSON.parse(config.seriesGroup) : 'none';
+
                     console.log(data);
-                    if ( Array.isArray( instruct ) ) {
-                        groups = [];
+                    if ( Array.isArray( groupsInstruct ) ) {
+                        seriesGroups = [];
                         JSON.parse(config.seriesGroup).forEach(group => {
                             console.log(group);
-                            groups.push(data.filter(series => group.indexOf(series.key) !== -1));
+                            seriesGroups.push(data.filter(series => group.indexOf(series.key) !== -1));
                         });
-                    } else if ( instruct === 'none' ) {
-                        groups = data.map(each => [each]);
-                    } else if ( instruct === 'all' ) {
-                        groups = [data.map(each => each)];
+                    } else if ( groupsInstruct === 'none' ) {
+                        seriesGroups = data.map(each => [each]);
+                    } else if ( groupsInstruct === 'all' ) {
+                        seriesGroups = [data.map(each => each)];
+                    } else {
+                        throw 'Invalid data-group-series unstruction from html';
                     }
-                    console.log(groups);
-                    return groups;
+                    console.log(seriesGroups);
+                    return seriesGroups;
                 }
-                console.log(d,i,array);
-                var lineIndex = 0;
                 var config = this.dataset,
+                    scaleInstruct = config.resetScale ? JSON.parse(config.resetScale) : 'none',
+                    lineIndex = 0,
                     marginTop = config.marginTop || view.margins.top,
                     marginRight = config.marginRight || view.margins.right,
                     marginBottom = config.marginBottom || view.margins.bottom,
@@ -154,7 +157,7 @@
                     .datum(datum);
                     console.log(datum);
 
-
+console.log(model.summaries);
                 var minX = 2015,
                     maxX = 2045,
                     minY = model.summaries[0][datum.key][view.activeField + '_value'].min < 0 ? model.summaries[0][datum.key][view.activeField + '_value'].min : 0,
@@ -171,9 +174,7 @@
                     .html(d => '<strong>' + d.key + '</strong>');
 
                 /* SVGS */
-                var dat = config.seriesGroup; 
-                console.log(dat);
-                console.log(JSON.parse(dat));
+                
                 var SVGs;    
                 var svgContainer = chartDiv.append('div')
                         .attr('class','flex');
@@ -197,6 +198,7 @@
                 SVGs.each(function(){
                     var SVG = d3.select(this);
                     var data = SVG.data();
+                    console.log(data);
                     var seriesGroups = SVG
                         .selectAll('series-groups')
                         .data(data)
@@ -216,7 +218,15 @@
 
                         })
                         .attr('d', function(d){
-                            console.log(d);
+                            console.log(d, d.key, datum.key);
+                            console.log(scaleInstruct);
+                            if ( scaleInstruct.indexOf(d.key) !== -1 ){
+                                console.log(model.summaries);
+                                minY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].min < 0 ? model.summaries[1][datum.key][d.key][view.activeField + '_value'].min : 0;
+                                maxY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].max;
+                                x = d3.scaleTime().range([0, width]).domain([parseTime(minX),parseTime(maxX)]);
+                                y = d3.scaleLinear().range([height, 0]).domain([minY,maxY]);
+                            }
                             d.values.unshift({year:2015,[view.activeField + '_value']:0});
                             return valueline(d.values);
                         });
@@ -227,6 +237,10 @@
                           .attr('transform', 'translate(0,' + y(0) + ')')
                           .attr('class', 'axis x-axis')
                           .call(d3.axisBottom(x).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).tickValues([parseTime(2025),parseTime(2035),parseTime(2045)]));
+
+                   SVG.append('g')
+                      .attr('class', 'axis y-axis')
+                      .call(d3.axisLeft(y).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(4));
 
                 });
 
