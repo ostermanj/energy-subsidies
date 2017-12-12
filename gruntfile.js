@@ -36,7 +36,7 @@ module.exports = function(grunt){
               unused: true
             },
             files: {
-                src: ['dev-js/index.es6']
+                src: ['dev-js/index.es6','js-exports/*.js']
             }
 
         },
@@ -101,7 +101,7 @@ module.exports = function(grunt){
                 tasks: ['htmlhint']
             },
             js: {
-                files: ['dev-js/*.es6'],
+                files: ['dev-js/*.es6','js-exports/*.js'],
                 tasks: ['jshint','browserify']
             },
             scss: {

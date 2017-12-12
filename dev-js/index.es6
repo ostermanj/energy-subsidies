@@ -1,8 +1,8 @@
-(function(){  
+ /* exported D3Charts */ // let's jshint know that D3Charts can be defined but not used in this file
+import { Helpers } from '../js-exports/Helpers';
+console.log(Helpers);
+var D3Charts = (function(){  
 "use strict"; 
-    function cleanString(str){
-        return str.replace(/_/g,' ');
-    }
     const model = {
         init(){ // SHOULD THIS STUFF BE IN CONTROLLER?
             this.dataPromises = [];
@@ -302,7 +302,7 @@ console.log(model.summaries);
                         d3.select(this).append('text')
                           .attr('class', 'units')
                           .attr('transform', () => `translate(-${marginLeft},-${marginTop - 10})`)
-                          .text(() => cleanString(units));
+                          .text(() => units.removeUnderscores());
                         }
                     }
 
@@ -342,6 +342,7 @@ console.log(model.summaries);
         }
 
     };
-
-    controller.init();
+    return {
+        Init: controller.init()
+    };
 }());
