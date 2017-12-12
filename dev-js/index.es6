@@ -1,14 +1,17 @@
- /* exported D3Charts */ // let's jshint know that D3Charts can be defined but not used in this file
+ /* exported D3Charts, Helpers */ // let's jshint know that D3Charts can be "defined but not used" in this file
+ /* polyfills needed: Promise, Array.isArray, Array.find, Array.filter
+
+ */
 import { Helpers } from '../js-exports/Helpers';
-console.log(Helpers);
 var D3Charts = (function(){  
 "use strict"; 
     const model = {
-        init(){ // SHOULD THIS STUFF BE IN CONTROLLER?
+        init(){ // SHOULD THIS STUFF BE IN CONTROLLER? yes, probably
             this.dataPromises = [];
-            this.nestBy = ['category','series'];
-            var sheetID = '1_G9HsJbxRBd7fWTF51Xr8lpxGxxImVcc-rTIaQbEeyA',
-                tabs = ['Sheet1','dictionary'];
+            this.nestBy = ['category','series']; // this should come from HTML
+            var sheetID = '1_G9HsJbxRBd7fWTF51Xr8lpxGxxImVcc-rTIaQbEeyA', // this should come from HTML
+                tabs = ['Sheet1','dictionary']; // this should come from HTML
+                                                // is there a case for more than one sheet of data?
 
             tabs.forEach((each, i) => {
                 var promise = new Promise((resolve,reject) => {
@@ -18,45 +21,45 @@ var D3Charts = (function(){
                             throw error;
                         }
                         var values = data.values;
-                        console.log(values);
-                        var nestType = each === 'dictionary' ? 'object' : 'series';
+                        var nestType = each === 'dictionary' ? 'object' : 'series'; // nestType for data should come from HTML
                         resolve(this.returnKeyValues(values, model.nestBy, true, nestType, i)); 
                     });
                 });
                 this.dataPromises.push(promise);
             });
-console.log(this.dataPromises);
-            return Promise.all([...this.dataPromises]);
+            return Promise.all(this.dataPromises);
         },
-        summarizeData(){
+        summarizeData(){ // this fn creates an array of objects summarizing the data in model.data. model.data is nested
+                         // and nesting and rolling up cannot be done easily at the same time, so they're done separately.
+                         // the summaries provide average, max, min of all fields in the data at all levels of nesting. 
+                         // the first (index 0) is one layer nested, the second is two, and so on.
             this.summaries = [];
             var variables = Object.keys(this.unnested[0]); // all need to have the same fields
             var nestByArray = Array.isArray(this.nestBy) ? this.nestBy : [this.nestBy];
             function reduceVariables(d){
                 return variables.reduce(function(acc, cur){
                     acc[cur] = {
-                        max: d3.max(d, d => d[cur]),
-                        min: d3.min(d, d => d[cur]),
-                        mean: d3.mean(d, d => d[cur])
+                        max:       d3.max(d, d => d[cur]),
+                        min:       d3.min(d, d => d[cur]),
+                        mean:      d3.mean(d, d => d[cur]),
+                        sum:       d3.sum(d, d => d[cur]),
+                        median:    d3.median(d, d => d[cur]),
+                        variance:  d3.variance(d, d => d[cur]),
+                        deviation: d3.deviation(d, d => d[cur])
                     };
                     return acc;
                 },{});
             }
             while ( nestByArray.length > 0){
-
                 let summarized = this.nestPrelim(nestByArray)
                     .rollup(reduceVariables)
                     .object(this.unnested);
-                this.summaries.unshift(summarized); // creates an array of keyed summaries
-                                                    // first (index 0) is one layer nested,
-                                                    // second is two, and so on.    
+                this.summaries.unshift(summarized);      
                 nestByArray.pop();
             }
         }, 
-
         nestPrelim(nestByArray){
-            // recursive  nesting function
-            console.log(nestByArray);
+            // recursive  nesting function used by summarizeData and returnKeyValues
             return nestByArray.reduce(function(acc, cur){
                 if (typeof cur !== 'string' && typeof cur !== 'function' ) { throw 'each nestBy item must be a string or function'; }
                 var rtn;
@@ -70,17 +73,20 @@ console.log(this.dataPromises);
                         return cur(d);
                     });
                 }
-
                 return rtn;
             }, d3.nest());
         },       
-        returnKeyValues(values, nestBy, coerce = false, nestType = 'series', tabIndex = 0){ // nestBy = string or array of field(s) to nest by, or a custom function, or an array of strings or functions;
-                                                                              // coerce = BOOL coerce to num or not
-                                                                              // nestType = object or series nest (d3)
+        returnKeyValues(values, nestBy, coerce = false, nestType = 'series', tabIndex = 0){
+        // this fn takes normalized data fetched as an array of rows and uses the values in the first row as keys for values in
+        // subsequent rows
+        // nestBy = string or array of field(s) to nest by, or a custom function, or an array of strings or functions;
+        // coerce = BOOL coerce to num or not; nestType = object or series nest (d3)
             
             var prelim; 
-            var unnested = values.slice(1).map(row => row.reduce(function(acc, cur, i) { // 1. params: total, currentValue, currentIndex[, arr]
-              acc[values[0][i]] = coerce === true ? isNaN(+cur) || cur === '' ? cur : +cur : cur; // 3. // acc is an object , key is corresponding value from row 0, value is current value of array
+            var unnested = values.slice(1).map(row => row.reduce(function(acc, cur, i) { 
+            // 1. params: total, currentValue, currentIndex[, arr]
+            // 3. // acc is an object , key is corresponding value from row 0, value is current value of array
+              acc[values[0][i]] = coerce === true ? isNaN(+cur) || cur === '' ? cur : +cur : cur; 
                 return acc;                                        // test for empty strings before coercing bc +'' => 0
             }, {}));
             if ( tabIndex === 0 ) {
@@ -89,7 +95,6 @@ console.log(this.dataPromises);
             if ( !nestBy ){
                 return unnested;
             } else {
-                console.log(nestBy);
                 if ( typeof nestBy === 'string' || typeof nestBy === 'function' ) { // ie only one nestBy field or funciton
                     prelim = model.nestPrelim([nestBy]);
                 } else {
@@ -98,11 +103,9 @@ console.log(this.dataPromises);
                 }
             }
             if ( nestType === 'object' ){
-                console.log('object');
                 return prelim
                     .object(unnested);
             } else {
-                console.log('series');
                 return prelim
                     .entries(unnested);
             }
@@ -111,31 +114,64 @@ console.log(this.dataPromises);
 
     const view = {
         init(){
-            this.margins = { // default values ; can be set be each SVGs DOM dataset (html data attributes)
+            this.margins = { // default values ; can be set be each SVGs DOM dataset (html data attributes).
+                             // ALSO default should be able to come from HTML
                 top:20,
-                right:15,
+                right:45,
                 bottom:15,
                 left:35
             };
-            this.activeField = 'pb25l';
+            this.activeField = 'pb25l'; // this should come from HTML
             this.setupCharts();
         },
-        label(key){
+        label(key){ // if you can get the summary values to be keyed all the way down, you wouldn't need Array.find
             return model.dictionary.find(each => each.key === key).label;
         },
         setupCharts(){ 
-            var chartDivs = d3.selectAll('.d3-chart');
+            var chartDivs = d3.selectAll('.d3-chart'); // selector will be different when wrapped in data wrapper
 
             chartDivs.each(function() { // TO DO differentiate chart types from html dataset
-                function groupSeries(data){
-                    var seriesGroups;
-                    var groupsInstruct = config.seriesGroup ? JSON.parse(config.seriesGroup) : 'none';
+                /* chartDivs.each scoped globals */
+                var config = this.dataset,
+                    scaleInstruct = config.resetScale ? JSON.parse(config.resetScale) : 'none',
+                    lineIndex = 0,
+                    seriesIndex = 0,
+                    marginTop = +config.marginTop || view.margins.top,
+                    marginRight = +config.marginRight || view.margins.right,
+                    marginBottom = +config.marginBottom || view.margins.bottom,
+                    marginLeft = +config.marginLeft || view.margins.left,
+                    width = config.eachWidth - marginLeft - marginRight,
+                    height = config.eachHeight ? config.eachHeight - marginTop - marginBottom : config.eachWidth / 2 - marginTop - marginBottom,
+                    datum = model.data.find(each => each.key === config.category),
+                    minX = 2015, // !!! NOT PROGRAMATIC
+                    maxX = 2045, // !!! NOT PROGRAMATIC
+                    // BELOW needs input from HTML--default maxes and mins in case natural min > 0, max < 0, or simply want to override
+                    minY = model.summaries[0][datum.key][view.activeField + '_value'].min < 0 ? model.summaries[0][datum.key][view.activeField + '_value'].min : 0,
+                    maxY = model.summaries[0][datum.key][view.activeField + '_value'].max > Math.abs(minY / 2) ? model.summaries[0][datum.key][view.activeField + '_value'].max : Math.abs(minY / 2),
+                    parseTime = d3.timeParse('%Y'), // !!! NOT PROGRAMATIC
+                    x = d3.scaleTime().range([0, width]).domain([parseTime(minX),parseTime(maxX)]), // !!! NOT PROGRAMATIC
+                    y = d3.scaleLinear().range([height, 0]).domain([minY,maxY]),  // !!! NOT PROGRAMATIC
+                    chartDiv = d3.select(this)
+                        .datum(datum),
+                    SVGs = chartDiv.append('div')
+                        .attr('class','flex')
+                        .selectAll('SVGs')
+                        .data(d => groupSeries(d.values) )
+                        .enter().append('svg')
+                        .attr('width', config.eachWidth)
+                        .attr('height', height + marginTop + marginBottom)
+                        .append('g')
+                        .attr('transform', `translate(${marginLeft},${marginTop})`),
+                    valueline = d3.line()
+                        .x(d => x(parseTime(d.year)) ) // !! not programmatic
+                        .y(d => y(d[view.activeField + '_value']) ); // !! not programmatic
 
-                    console.log(data);
+                function groupSeries(data){
+                    var seriesGroups,
+                        groupsInstruct = config.seriesGroup ? JSON.parse(config.seriesGroup) : 'none';
                     if ( Array.isArray( groupsInstruct ) ) {
                         seriesGroups = [];
                         JSON.parse(config.seriesGroup).forEach(group => {
-                            console.log(group);
                             seriesGroups.push(data.filter(series => group.indexOf(series.key) !== -1));
                         });
                     } else if ( groupsInstruct === 'none' ) {
@@ -143,152 +179,30 @@ console.log(this.dataPromises);
                     } else if ( groupsInstruct === 'all' ) {
                         seriesGroups = [data.map(each => each)];
                     } else {
-                        throw 'Invalid data-group-series unstruction from html';
+                        throw `Invalid data-group-series instruction from html. 
+                               Must be valid JSON: "None" or "All" or an array
+                               of arrays containing the series to be grouped
+                               together. All strings must be double-quoted.`;
                     }
-                    console.log(seriesGroups);
                     return seriesGroups;
-                }
-                var thisChartDiv = this;
-                var config = this.dataset;
-                var scaleInstruct = config.resetScale ? JSON.parse(config.resetScale) : 'none',
-                    lineIndex = 0,
-                    seriesIndex = 0,
-                    marginTop = +config.marginTop || view.margins.top,
-                    marginRight = +config.marginRight || view.margins.right,
-                    marginBottom = +config.marginBottom || view.margins.bottom,
-                    marginLeft = +config.marginLeft || view.margins.left;
-                if ( !config.marginRight && config.directLabel ){
-                    marginRight = 45;
-                }
-                var width = config.eachWidth - marginLeft - marginRight,
-                    height = config.eachHeight ? config.eachHeight - marginTop - marginBottom : config.eachWidth / 2 - marginTop - marginBottom;
-                var datum = model.data.find(each => each.key === config.category);
-                console.log(datum);
-                var chartDiv = d3.select(this)
-                    .datum(datum);
-                    console.log(datum);
+                } // end groupSeries()
 
-console.log(model.summaries);
-                var minX = 2015,
-                    maxX = 2045,
-                    minY = model.summaries[0][datum.key][view.activeField + '_value'].min < 0 ? model.summaries[0][datum.key][view.activeField + '_value'].min : 0,
-                    maxY = model.summaries[0][datum.key][view.activeField + '_value'].max > Math.abs(minY / 2) ? model.summaries[0][datum.key][view.activeField + '_value'].max : Math.abs(minY / 2),
-                    parseTime = d3.timeParse('%Y'),
-                    x = d3.scaleTime().range([0, width]).domain([parseTime(minX),parseTime(maxX)]),
-                    y = d3.scaleLinear().range([height, 0]).domain([minY,maxY]);
-                    
-                    console.log(minX,minY,maxX,maxY);
-
-
-            /* HEADINGS */
+                
+                /* HEADINGS */
                 chartDiv.append('p')
                     .html(d => '<strong>' + view.label(d.key) + '</strong>');
 
                 /* SVGS */
                 
-                var SVGs;    
-                var svgContainer = chartDiv.append('div')
-                        .attr('class','flex');
-                
-                SVGs = svgContainer.selectAll('SVGs')
-                    .data((d,i,array) => {
-                            console.log(d,i,array);
-                            return groupSeries(d.values);
-                        
-                    })
-                    .enter().append('svg')
-                    .attr('width', config.eachWidth)
-                    .attr('height', height + marginTop + marginBottom)
-                    .append('g')
-                    .attr('transform', `translate(${marginLeft},${marginTop})`);
-                    
-                
-                var valueline =  d3.line()
-                        .x(d => {console.log(d); return x(parseTime(d.year)); })
-                        .y(d => y(d[view.activeField + '_value']) );
+                SVGs.each(function(d,i){
+                    var SVG = d3.select(this),
+                        data = SVG.data(),
+                        units,
+                        seriesGroups = SVG
+                            .selectAll('series-groups')
+                            .data(data)
+                            .enter().append('g');
 
-                SVGs.each(function(d,i,array){
-                    var SVG = d3.select(this);
-                    var data = SVG.data();
-                    var units;
-                    console.log(data);
-                    var seriesGroups = SVG
-                        .selectAll('series-groups')
-                        .data(data)
-                        .enter().append('g');
-
-                    /* PATHS */
-
-                    seriesGroups
-                        .selectAll('series')
-                        .data(d => {
-                            console.log(d);
-                            return d;
-                        })
-                        .enter().append('path')
-                        .attr('class', () => {
-                            return 'line line-' + lineIndex++;
-
-                        })
-                        .attr('d', (d,j) => {
-                            units = d.values[1].units;
-                            console.log(i, this, j);
-                            console.log(d, d.key, datum.key);
-                            console.log(scaleInstruct);
-                            if ( scaleInstruct.indexOf(d.key) !== -1 ){
-                                console.log(model.summaries);
-                                minY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].min < 0 ? model.summaries[1][datum.key][d.key][view.activeField + '_value'].min : 0;
-                                maxY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].max > Math.abs(minY / 2) ? model.summaries[1][datum.key][d.key][view.activeField + '_value'].max : Math.abs(minY / 2);
-                                x = d3.scaleTime().range([0, width]).domain([parseTime(minX),parseTime(maxX)]);
-                                y = d3.scaleLinear().range([height, 0]).domain([minY,maxY]);
-                                if ( i !== 0 && j === 0 ) {
-                                    addYAxis.call(this,'', true);
-                                } 
-                            } else if ( i !== 0 && j === 0 ) {
-                                 addYAxis.call(this,'repeated');
-                            }
-                            d.values.unshift({year:2015,[view.activeField + '_value']:0});
-                            return valueline(d.values);
-                        })
-                        .each(d => {
-                           // var data = d3.select(this).data();
-                            console.log(thisChartDiv);
-                            if (config.directLabel){
-                                console.log('directlabel');
-                                SVG.append('text')
-                                    .attr('class', () => 'series-label series-' + seriesIndex++)
-                                    .html(() => '<tspan x="0">' + view.label(d.key).replace(/\\n/g,'</tspan><tspan x="0" dy="1.2em">') + '</tspan>')
-                                    .attr('transform', () => `translate(${width + 3},${y(d.values[d.values.length - 1][view.activeField + '_value']) + 3})`);
-                            }
-                        });
-
-
-
-
-                    /* series labels */
-
-                   /* seriesGroups.append('text')
-                        .attr('class', () => 'series-label')
-                        .attr('transform', () => `translate(0,${height + marginBottom})`)
-                        .html(d => {
-                            console.log(d);
-                            return d.reduce((acc,cur) => {
-                                return acc + '<tspan class="series-' + lineIndex++ + '">' + view.label(cur.key) + '</tspan>';
-                            },'');
-                            
-                            //return view.label(d[0].key); // if grouped series, will need to iterate over all indexes
-                        }); */
-
-                    /* X AXIS */
-
-                    SVG.append('g')
-                          .attr('transform', 'translate(0,' + y(0) + ')')
-                          .attr('class', 'axis x-axis')
-                          .call(d3.axisBottom(x).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).tickValues([parseTime(2025),parseTime(2035),parseTime(2045)]));
-                          console.log(d,i,array,this);
-                   if ( i === 0 ) { // i here is from the SVG.each loop. append yAxis to all first SVGs of chartDiv
-                        addYAxis.call(this, '', true);
-                    }
                     function addYAxis(repeated = '', showUnits = false){
                         /* jshint validthis: true */ /* <- comment keeps jshint from falsely warning that
                                                            `this` will be undefined. the .call() method
@@ -306,43 +220,72 @@ console.log(model.summaries);
                         }
                     }
 
-                });
+                    /* PATHS */
 
-                   // set data to d[0] and then append lines
-                    
+                    seriesGroups // !! NOT PROGRAMMATIC , IE, TYPE NEEDS TO BE SPECIFIED BY config.type
+                        .selectAll('series')
+                        .data(d => {
+                            return d;
+                        })
+                        .enter().append('path')
+                        .attr('class', () => {
+                            return 'line line-' + lineIndex++;
 
-                    /* append line */
-
-              /*      d3.select(this).append('path')
-                        .attr('class', 'line')
-                        .attr('d', function(d){
-                            console.log(d);
-                            
+                        })
+                        .attr('d', (d,j) => {
+                            units = d.values[1].units;
+                            if ( scaleInstruct.indexOf(d.key) !== -1 ){ // TODO: resetting scale make the series min,max from the
+                                                                        // series' own data, not the one it's grouped with 
+                                /* NOT PROGRAMMATIC */ minY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].min < 0 ? model.summaries[1][datum.key][d.key][view.activeField + '_value'].min : 0;
+                                /* NOT PROGRAMMATIC */ maxY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].max > Math.abs(minY / 2) ? model.summaries[1][datum.key][d.key][view.activeField + '_value'].max : Math.abs(minY / 2);
+                                x = d3.scaleTime().range([0, width]).domain([parseTime(minX),parseTime(maxX)]);
+                                y = d3.scaleLinear().range([height, 0]).domain([minY,maxY]);
+                                if ( i !== 0 && j === 0 ) {
+                                    addYAxis.call(this,'', true);
+                                } 
+                            } else if ( i !== 0 && j === 0 ) {
+                                 addYAxis.call(this,'repeated');
+                            }
+                            d.values.unshift({year:2015,[view.activeField + '_value']:0}); //TO DO: put in data
                             return valueline(d.values);
+                        })
+                        .each(d => {
+                           // var data = d3.select(this).data();
+                            if (config.directLabel){
+                                SVG.append('text')
+                                    .attr('class', () => 'series-label series-' + seriesIndex++)
+                                    .html(() => '<tspan x="0">' + view.label(d.key).replace(/\\n/g,'</tspan><tspan x="0" dy="1.2em">') + '</tspan>')
+                                    .attr('transform', () => `translate(${width + 3},${y(d.values[d.values.length - 1][view.activeField + '_value']) + 3})`);
+                            }
                         });
-                });
-                    */
 
-            });
-        }
-        
-    };
+                    /* X AXIS */
+
+                    SVG.append('g')
+                        .attr('transform', 'translate(0,' + y(0) + ')')
+                        .attr('class', 'axis x-axis')
+                        .call(d3.axisBottom(x).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).tickValues([parseTime(2025),parseTime(2035),parseTime(2045)]));
+                    if ( i === 0 ) { // i here is from the SVG.each loop. append yAxis to all first SVGs of chartDiv
+                        addYAxis.call(this, '', true);
+                    }
+                }); // end SVGs.each()
+            }); // end chartDics.each()
+        } // end view.setupCharts()
+    }; // end view
 
     const controller = {
         init(){
-            console.log('controller init');
             model.init().then(values => {
                 model.data = values[0];
-                model.dictionary = values[1].undefined.undefined;
-                console.log(model.dictionary);
-                console.log(model.data);
+                model.dictionary = values[1].undefined.undefined; // !! NOT PROGRAMMATIC / CONSISTENT
                 model.summarizeData();
                 view.init();
             });
         }
 
     };
-    return {
-        Init: controller.init()
+    window.D3Charts = { // need to specify window bc after transpiling all this will be wrapped in IIFEs
+                        // and `return`ing won't get the export into window's global scope
+        Init: controller.init
     };
 }());
