@@ -6,31 +6,29 @@ import { Helpers } from '../js-exports/Helpers';
 
 var D3Charts = (function(){  
 "use strict"; 
-    var model,
-        view,
-        controller; // can these be in this scope without collision bt instances of D3ChartGroup?
-                    // alternative: pass them in as parameters
     
-    var D3ChartGroup = function(container){
-        model = this.model;
-        view = this.view;
-        controller = this.controller;
-        controller.initController(container);
+    var chartCollection = [];
+    var D3ChartGroup = function(container, index){
+        console.log(index);
+        this.container = container;
+        this.index = index;
+        this.controller.initController(container, this.model, this.view);
     };
     //prototype begins here
     D3ChartGroup.prototype = {
         model: {
             init(container){ // SHOULD THIS STUFF BE IN CONTROLLER? yes, probably
+                var model = this;
                 var groupConfig = container.dataset;
                 this.dataPromises = [];
                 this.nestBy = JSON.parse(groupConfig.nestBy);
+                console.log('nest by', this.nestBy);
                 var sheetID = groupConfig.sheetId, 
                     tabs = [groupConfig.dataTab,groupConfig.dictionaryTab]; // this should come from HTML
                                                     // is there a case for more than one sheet of data?
-
                 tabs.forEach((each, i) => {
                     var promise = new Promise((resolve,reject) => {
-                        d3.json('https://sheets.googleapis.com/v4/spreadsheets/' + sheetID + '/values/' + each + '?key=AIzaSyDD3W5wJeJF2esffZMQxNtEl9tt-OfgSq4', (error,data) => { // columns A through I
+                        d3.json('https://sheets.googleapis.com/v4/spreadsheets/' + sheetID + '/values/' + each + '?key=AIzaSyDD3W5wJeJF2esffZMQxNtEl9tt-OfgSq4', (error,data) => { 
                             if (error) {
                                 reject(error);
                                 throw error;
@@ -97,7 +95,8 @@ var D3Charts = (function(){
             // nestBy = string or array of field(s) to nest by, or a custom function, or an array of strings or functions;
             // coerce = BOOL coerce to num or not; nestType = object or series nest (d3)
                 
-                var prelim; 
+                var prelim;
+                var model = this; 
                 var unnested = values.slice(1).map(row => row.reduce(function(acc, cur, i) { 
                 // 1. params: total, currentValue, currentIndex[, arr]
                 // 3. // acc is an object , key is corresponding value from row 0, value is current value of array
@@ -128,7 +127,7 @@ var D3Charts = (function(){
         },
 
         view: {
-            init(container){
+            init(container, model){
                 this.margins = { // default values ; can be set be each SVGs DOM dataset (html data attributes).
                                  // ALSO default should be able to come from HTML
                     top:20,
@@ -137,14 +136,14 @@ var D3Charts = (function(){
                     left:35
                 };
                 this.activeField = 'pb25l'; // this should come from HTML
-                this.setupCharts(container);
+                this.setupCharts(container, model);
             },
-            label(key){ // if you can get the summary values to be keyed all the way down, you wouldn't need Array.find
+            label(model, key){ // if you can get the summary values to be keyed all the way down, you wouldn't need Array.find
                return model.dictionary.find(each => each.key === key).label;
             },
-            setupCharts(container){ 
+            setupCharts(container, model){ 
+                var view = this;
                 var chartDivs = d3.select(container).selectAll('.d3-chart'); 
-                console.log(chartDivs);
 
                 chartDivs.each(function() { // TO DO differentiate chart types from html dataset
                     /* chartDivs.each scoped globals */
@@ -208,7 +207,7 @@ var D3Charts = (function(){
 
                     
                     /* HEADINGS */
-                        headings.html(d => '<strong>' + view.label(d.key) + '</strong>');
+                        headings.html(d => '<strong>' + view.label(model, d.key) + '</strong>');
 
                     /* SVGS */
                     
@@ -296,15 +295,13 @@ var D3Charts = (function(){
         }, // end view
 
         controller: {
-            initController: function(container){
-                console.log(this); // `this` is controller
-                console.log(model);
-                console.log(view);
+            initController: function(container, model){//, view){
                 model.init(container).then(values => {
+                    console.log(values);
                     model.data = values[0];
-                    model.dictionary = values[1].undefined.undefined; // !! NOT PROGRAMMATIC / CONSISTENT
-                    model.summarizeData();
-                    view.init(container);
+                  //  model.dictionary = values[1].undefined.undefined; // !! NOT PROGRAMMATIC / CONSISTENT
+                  //  model.summarizeData();
+                 //   view.init(container, model);
                 });
             }
         }
@@ -313,10 +310,11 @@ var D3Charts = (function(){
     window.D3Charts = { // need to specify window bc after transpiling all this will be wrapped in IIFEs
                         // and `return`ing won't get the export into window's global scope
         Init(){
-            document.querySelectorAll('.d3-group').forEach(each => {
-                new D3ChartGroup(each);
-            });
-            // call new constructor for each wrapper div
+            var groupDivs = document.querySelectorAll('.d3-group');
+            for ( let i = 0; i < groupDivs.length; i++ ){
+                chartCollection.push(new D3ChartGroup(groupDivs[i], i));
+            }
+            console.log(chartCollection);
         }
     };
 }()); // end var D3Charts IIFE
