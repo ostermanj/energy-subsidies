@@ -132,6 +132,8 @@ var D3Charts = (function(){
 
             chartDivs.each(function() { // TO DO differentiate chart types from html dataset
                 /* chartDivs.each scoped globals */
+// ** TO DO ** allow data attr strings to be quoted only once. ie JSON.parse only if string includes / starts with []
+
                 var config = this.dataset,
                     scaleInstruct = config.resetScale ? JSON.parse(config.resetScale) : 'none',
                     lineIndex = 0,
@@ -153,6 +155,7 @@ var D3Charts = (function(){
                     y = d3.scaleLinear().range([height, 0]).domain([minY,maxY]),  // !!! NOT PROGRAMATIC
                     chartDiv = d3.select(this)
                         .datum(datum),
+                    headings = chartDiv.append('p'),
                     SVGs = chartDiv.append('div')
                         .attr('class','flex')
                         .selectAll('SVGs')
@@ -189,8 +192,7 @@ var D3Charts = (function(){
 
                 
                 /* HEADINGS */
-                chartDiv.append('p')
-                    .html(d => '<strong>' + view.label(d.key) + '</strong>');
+                    headings.html(d => '<strong>' + view.label(d.key) + '</strong>');
 
                 /* SVGS */
                 
@@ -203,7 +205,7 @@ var D3Charts = (function(){
                             .data(data)
                             .enter().append('g');
 
-                    function addYAxis(repeated = '', showUnits = false){
+                    function addYAxis(repeated = '', showUnits = false){  // !! NOT PROGRAMMATIC
                         /* jshint validthis: true */ /* <- comment keeps jshint from falsely warning that
                                                            `this` will be undefined. the .call() method
                                                            defines `this` */
@@ -222,52 +224,56 @@ var D3Charts = (function(){
 
                     /* PATHS */
 
-                    seriesGroups // !! NOT PROGRAMMATIC , IE, TYPE NEEDS TO BE SPECIFIED BY config.type
-                        .selectAll('series')
-                        .data(d => {
-                            return d;
-                        })
-                        .enter().append('path')
-                        .attr('class', () => {
-                            return 'line line-' + lineIndex++;
+                    if ( config.type === 'line' ){
+                        seriesGroups // !! NOT PROGRAMMATIC , IE, TYPE NEEDS TO BE SPECIFIED BY config.type
+                            .selectAll('series')
+                            .data(d => {
+                                return d;
+                            })
+                            .enter().append('path')
+                            .attr('class', () => {
+                                return 'line line-' + lineIndex++;
 
-                        })
-                        .attr('d', (d,j) => {
-                            units = d.values[1].units;
-                            if ( scaleInstruct.indexOf(d.key) !== -1 ){ // TODO: resetting scale make the series min,max from the
-                                                                        // series' own data, not the one it's grouped with 
-                                /* NOT PROGRAMMATIC */ minY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].min < 0 ? model.summaries[1][datum.key][d.key][view.activeField + '_value'].min : 0;
-                                /* NOT PROGRAMMATIC */ maxY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].max > Math.abs(minY / 2) ? model.summaries[1][datum.key][d.key][view.activeField + '_value'].max : Math.abs(minY / 2);
-                                x = d3.scaleTime().range([0, width]).domain([parseTime(minX),parseTime(maxX)]);
-                                y = d3.scaleLinear().range([height, 0]).domain([minY,maxY]);
-                                if ( i !== 0 && j === 0 ) {
-                                    addYAxis.call(this,'', true);
-                                } 
-                            } else if ( i !== 0 && j === 0 ) {
-                                 addYAxis.call(this,'repeated');
-                            }
-                            d.values.unshift({year:2015,[view.activeField + '_value']:0}); //TO DO: put in data
-                            return valueline(d.values);
-                        })
-                        .each(d => {
-                           // var data = d3.select(this).data();
-                            if (config.directLabel){
-                                SVG.append('text')
-                                    .attr('class', () => 'series-label series-' + seriesIndex++)
-                                    .html(() => '<tspan x="0">' + view.label(d.key).replace(/\\n/g,'</tspan><tspan x="0" dy="1.2em">') + '</tspan>')
-                                    .attr('transform', () => `translate(${width + 3},${y(d.values[d.values.length - 1][view.activeField + '_value']) + 3})`);
-                            }
-                        });
+                            })
+                            .attr('d', (d,j) => {
+                                units = d.values[1].units;
+                                if ( scaleInstruct.indexOf(d.key) !== -1 ){ // TODO: resetting scale make the series min,max from the
+                                                                            // series' own data, not the one it's grouped with 
+                                    /* NOT PROGRAMMATIC */ minY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].min < 0 ? model.summaries[1][datum.key][d.key][view.activeField + '_value'].min : 0;
+                                    /* NOT PROGRAMMATIC */ maxY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].max > Math.abs(minY / 2) ? model.summaries[1][datum.key][d.key][view.activeField + '_value'].max : Math.abs(minY / 2);
+                                    x = d3.scaleTime().range([0, width]).domain([parseTime(minX),parseTime(maxX)]);
+                                    y = d3.scaleLinear().range([height, 0]).domain([minY,maxY]);
+                                    if ( i !== 0 && j === 0 ) {
+                                        addYAxis.call(this,'', true);
+                                    } 
+                                } else if ( i !== 0 && j === 0 ) {
+                                     addYAxis.call(this,'repeated');
+                                }
+                                d.values.unshift({year:2015,[view.activeField + '_value']:0}); //TO DO: put in data
+                                return valueline(d.values);
+                            })
+                            .each(d => {
+                               // var data = d3.select(this).data();
+                                if (config.directLabel){
+                                    SVG.append('text')
+                                        .attr('class', () => 'series-label series-' + seriesIndex++)
+                                        .html(() => '<tspan x="0">' + view.label(d.key).replace(/\\n/g,'</tspan><tspan x="0" dy="1.2em">') + '</tspan>')
+                                        .attr('transform', () => `translate(${width + 3},${y(d.values[d.values.length - 1][view.activeField + '_value']) + 3})`);
+                                }
+                            });
 
-                    /* X AXIS */
+                        /* X AXIS */
 
-                    SVG.append('g')
-                        .attr('transform', 'translate(0,' + y(0) + ')')
-                        .attr('class', 'axis x-axis')
-                        .call(d3.axisBottom(x).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).tickValues([parseTime(2025),parseTime(2035),parseTime(2045)]));
-                    if ( i === 0 ) { // i here is from the SVG.each loop. append yAxis to all first SVGs of chartDiv
-                        addYAxis.call(this, '', true);
-                    }
+                        SVG.append('g')
+                            .attr('transform', 'translate(0,' + y(0) + ')')
+                            .attr('class', 'axis x-axis')
+                            .call(d3.axisBottom(x).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).tickValues([parseTime(2025),parseTime(2035),parseTime(2045)]));
+                        
+                        /* Y AXIS */    
+                        if ( i === 0 ) { // i here is from the SVG.each loop. append yAxis to all first SVGs of chartDiv
+                            addYAxis.call(this, '', true);
+                        }
+                    } // end if type === 'line'
                 }); // end SVGs.each()
             }); // end chartDics.each()
         } // end view.setupCharts()
