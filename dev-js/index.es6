@@ -12,19 +12,18 @@ var D3Charts = (function(){
         console.log(index);
         this.container = container;
         this.index = index;
-        this.controller.initController(container, this.model, this.view);
+        this.config = container.dataset;
+        this.dataPromises = this.returnDataPromises(container);
+        console.log(this.dataPromises);
+        //this.controller.initController(container, this.model, this.view);
     };
     //prototype begins here
     D3ChartGroup.prototype = {
-        model: {
-            init(container){ // SHOULD THIS STUFF BE IN CONTROLLER? yes, probably
-                var model = this;
-                var groupConfig = container.dataset;
-                this.dataPromises = [];
-                this.nestBy = JSON.parse(groupConfig.nestBy);
-                console.log('nest by', this.nestBy);
-                var sheetID = groupConfig.sheetId, 
-                    tabs = [groupConfig.dataTab,groupConfig.dictionaryTab]; // this should come from HTML
+        
+            returnDataPromises(){ // SHOULD THIS STUFF BE IN CONTROLLER? yes, probably
+                var dataPromises = [];
+                var sheetID = this.config.sheetId, 
+                    tabs = [this.config.dataTab,this.config.dictionaryTab]; // this should come from HTML
                                                     // is there a case for more than one sheet of data?
                 tabs.forEach((each, i) => {
                     var promise = new Promise((resolve,reject) => {
@@ -35,20 +34,27 @@ var D3Charts = (function(){
                             }
                             var values = data.values;
                             var nestType = each === 'dictionary' ? 'object' : 'series'; // nestType for data should come from HTML
-                            resolve(this.returnKeyValues(values, model.nestBy, true, nestType, i)); 
+                            var nestBy = each === 'dictionary' ? false : this.nestBy;
+                            resolve(this.returnKeyValues(values, nestBy, true, nestType, i)); 
                         });
                     });
-                    this.dataPromises.push(promise);
+                    dataPromises.push(promise);
                 });
-                return Promise.all(this.dataPromises);
+                Promise.all(dataPromises).then(values => {
+                    this.data = values[0];
+                    this.dictionary = values[1];
+                    this.summaries = this.summarizeData();
+                });
+                return Promise.all(dataPromises);
             },
             summarizeData(){ // this fn creates an array of objects summarizing the data in model.data. model.data is nested
                              // and nesting and rolling up cannot be done easily at the same time, so they're done separately.
                              // the summaries provide average, max, min of all fields in the data at all levels of nesting. 
                              // the first (index 0) is one layer nested, the second is two, and so on.
-                this.summaries = [];
+                var summaries = [];
                 var variables = Object.keys(this.unnested[0]); // all need to have the same fields
-                var nestByArray = Array.isArray(this.nestBy) ? this.nestBy : [this.nestBy];
+                var nestBy = this.config.nestBy ? JSON.parse(this.config.nestBy) : false;
+                var nestByArray = Array.isArray(nestBy) ? nestBy : [nestBy];
                 function reduceVariables(d){
                     return variables.reduce(function(acc, cur){
                         acc[cur] = {
@@ -63,13 +69,14 @@ var D3Charts = (function(){
                         return acc;
                     },{});
                 }
-                while ( nestByArray.length > 0){
+                while ( nestByArray.length > 0) {
                     let summarized = this.nestPrelim(nestByArray)
                         .rollup(reduceVariables)
                         .object(this.unnested);
-                    this.summaries.unshift(summarized);      
+                    summaries.unshift(summarized);      
                     nestByArray.pop();
                 }
+                return summaries;
             }, 
             nestPrelim(nestByArray){
                 // recursive  nesting function used by summarizeData and returnKeyValues
@@ -96,7 +103,7 @@ var D3Charts = (function(){
             // coerce = BOOL coerce to num or not; nestType = object or series nest (d3)
                 
                 var prelim;
-                var model = this; 
+                
                 var unnested = values.slice(1).map(row => row.reduce(function(acc, cur, i) { 
                 // 1. params: total, currentValue, currentIndex[, arr]
                 // 3. // acc is an object , key is corresponding value from row 0, value is current value of array
@@ -104,16 +111,16 @@ var D3Charts = (function(){
                     return acc;                                        // test for empty strings before coercing bc +'' => 0
                 }, {}));
                 if ( tabIndex === 0 ) {
-                    model.unnested = unnested;
+                    this.unnested = unnested;
                 }           
                 if ( !nestBy ){
                     return unnested;
                 } else {
                     if ( typeof nestBy === 'string' || typeof nestBy === 'function' ) { // ie only one nestBy field or funciton
-                        prelim = model.nestPrelim([nestBy]);
+                        prelim = this.nestPrelim([nestBy]);
                     } else {
                         if (!Array.isArray(nestBy)) { throw 'nestBy variable must be a string, function, or array of strings or functions'; }
-                        prelim = model.nestPrelim(nestBy);
+                        prelim = this.nestPrelim(nestBy);
                     }
                 }
                 if ( nestType === 'object' ){
@@ -123,8 +130,8 @@ var D3Charts = (function(){
                     return prelim
                         .entries(unnested);
                 }
-            }
-        },
+            },
+        
 
         view: {
             init(container, model){
