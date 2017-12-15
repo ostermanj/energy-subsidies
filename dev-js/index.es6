@@ -17,7 +17,7 @@ var D3Charts = (function(){
         this.config = container.dataset.convert();
         console.log(this.config.nestBy.toString());
         this.dataPromises = this.returnDataPromises(container);
-        this.chartCollection = [];
+        this.children = [];
         console.log(this.dataPromises);
         //this.controller.initController(container, this.model, this.view);
         this.dataPromises.then(() => {
@@ -142,14 +142,10 @@ var D3Charts = (function(){
                 }
             },
             initializeCharts(container){
-                var constructors = {
-                    line: 'LineChart'
-                };
                 var group = this;
                 d3.select(container).selectAll('.d3-chart')
-                    .each(function(d,i){
-                        var chartType = this.dataset.type || group.config.type;
-                        group.chartCollection.push(new Charts[constructors[chartType]](this, i, group));
+                    .each(function(){
+                        group.children.push(new Charts.ChartDiv(this, group));
                     });
             }        
     }; // D3ChartGroup prototype ends here
