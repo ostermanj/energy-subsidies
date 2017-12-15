@@ -3,24 +3,31 @@
 
  */
 import { Helpers } from '../js-exports/Helpers';
+import { Charts } from '../js-exports/Charts';
 
-var D3Charts = (function(){  
+var D3Charts = (function(){
+
 "use strict"; 
     
-    var chartCollection = [];
+    var groupCollection = [];
     var D3ChartGroup = function(container, index){
         console.log(index);
         this.container = container;
         this.index = index;
-        this.config = container.dataset;
+        this.config = container.dataset.convert();
+        console.log(this.config.nestBy.toString());
         this.dataPromises = this.returnDataPromises(container);
+        this.chartCollection = [];
         console.log(this.dataPromises);
         //this.controller.initController(container, this.model, this.view);
+        this.dataPromises.then(() => {
+            this.initializeCharts(container);
+        });
     };
     //prototype begins here
     D3ChartGroup.prototype = {
         
-            returnDataPromises(){ // SHOULD THIS STUFF BE IN CONTROLLER? yes, probably
+            returnDataPromises(){ 
                 var dataPromises = [];
                 var sheetID = this.config.sheetId, 
                     tabs = [this.config.dataTab,this.config.dictionaryTab]; // this should come from HTML
@@ -34,7 +41,7 @@ var D3Charts = (function(){
                             }
                             var values = data.values;
                             var nestType = each === 'dictionary' ? 'object' : 'series'; // nestType for data should come from HTML
-                            var nestBy = each === 'dictionary' ? false : this.nestBy;
+                            var nestBy = each === 'dictionary' ? false : this.config.nestBy;
                             resolve(this.returnKeyValues(values, nestBy, true, nestType, i)); 
                         });
                     });
@@ -53,7 +60,10 @@ var D3Charts = (function(){
                              // the first (index 0) is one layer nested, the second is two, and so on.
                 var summaries = [];
                 var variables = Object.keys(this.unnested[0]); // all need to have the same fields
-                var nestBy = this.config.nestBy ? JSON.parse(this.config.nestBy) : false;
+                var nestBy = this.config.nestBy ? this.config.nestBy.map(each => each) : false; 
+                                                                // uses map to create new array rather than assigning
+                                                                // by reference. the `pop()` below would affect original
+                                                                // array if done by reference
                 var nestByArray = Array.isArray(nestBy) ? nestBy : [nestBy];
                 function reduceVariables(d){
                     return variables.reduce(function(acc, cur){
@@ -131,187 +141,17 @@ var D3Charts = (function(){
                         .entries(unnested);
                 }
             },
-        
-
-        view: {
-            init(container, model){
-                this.margins = { // default values ; can be set be each SVGs DOM dataset (html data attributes).
-                                 // ALSO default should be able to come from HTML
-                    top:20,
-                    right:45,
-                    bottom:15,
-                    left:35
+            initializeCharts(container){
+                var constructors = {
+                    line: 'LineChart'
                 };
-                this.activeField = 'pb25l'; // this should come from HTML
-                this.setupCharts(container, model);
-            },
-            label(model, key){ // if you can get the summary values to be keyed all the way down, you wouldn't need Array.find
-               return model.dictionary.find(each => each.key === key).label;
-            },
-            setupCharts(container, model){ 
-                var view = this;
-                var chartDivs = d3.select(container).selectAll('.d3-chart'); 
-
-                chartDivs.each(function() { // TO DO differentiate chart types from html dataset
-                    /* chartDivs.each scoped globals */
-                    // ** TO DO ** allow data attr strings to be quoted only once. ie JSON.parse only if string includes / starts with []
-
-                    var config = this.dataset,
-                        scaleInstruct = config.resetScale ? JSON.parse(config.resetScale) : 'none',
-                        lineIndex = 0,
-                        seriesIndex = 0,
-                        marginTop = +config.marginTop || view.margins.top,
-                        marginRight = +config.marginRight || view.margins.right,
-                        marginBottom = +config.marginBottom || view.margins.bottom,
-                        marginLeft = +config.marginLeft || view.margins.left,
-                        width = config.eachWidth - marginLeft - marginRight,
-                        height = config.eachHeight ? config.eachHeight - marginTop - marginBottom : config.eachWidth / 2 - marginTop - marginBottom,
-                        datum = model.data.find(each => each.key === config.category),
-                        minX = 2015, // !!! NOT PROGRAMATIC
-                        maxX = 2045, // !!! NOT PROGRAMATIC
-                        // BELOW needs input from HTML--default maxes and mins in case natural min > 0, max < 0, or simply want to override
-                        minY = model.summaries[0][datum.key][view.activeField + '_value'].min < 0 ? model.summaries[0][datum.key][view.activeField + '_value'].min : 0,
-                        maxY = model.summaries[0][datum.key][view.activeField + '_value'].max > Math.abs(minY / 2) ? model.summaries[0][datum.key][view.activeField + '_value'].max : Math.abs(minY / 2),
-                        parseTime = d3.timeParse('%Y'), // !!! NOT PROGRAMATIC
-                        x = d3.scaleTime().range([0, width]).domain([parseTime(minX),parseTime(maxX)]), // !!! NOT PROGRAMATIC
-                        y = d3.scaleLinear().range([height, 0]).domain([minY,maxY]),  // !!! NOT PROGRAMATIC
-                        chartDiv = d3.select(this)
-                            .datum(datum),
-                        headings = chartDiv.append('p'),
-                        SVGs = chartDiv.append('div')
-                            .attr('class','flex')
-                            .selectAll('SVGs')
-                            .data(d => groupSeries(d.values) )
-                            .enter().append('svg')
-                            .attr('width', config.eachWidth)
-                            .attr('height', height + marginTop + marginBottom)
-                            .append('g')
-                            .attr('transform', `translate(${marginLeft},${marginTop})`),
-                        valueline = d3.line()
-                            .x(d => x(parseTime(d.year)) ) // !! not programmatic
-                            .y(d => y(d[view.activeField + '_value']) ); // !! not programmatic
-
-                    function groupSeries(data){
-                        var seriesGroups,
-                            groupsInstruct = config.seriesGroup ? JSON.parse(config.seriesGroup) : 'none';
-                        if ( Array.isArray( groupsInstruct ) ) {
-                            seriesGroups = [];
-                            JSON.parse(config.seriesGroup).forEach(group => {
-                                seriesGroups.push(data.filter(series => group.indexOf(series.key) !== -1));
-                            });
-                        } else if ( groupsInstruct === 'none' ) {
-                            seriesGroups = data.map(each => [each]);
-                        } else if ( groupsInstruct === 'all' ) {
-                            seriesGroups = [data.map(each => each)];
-                        } else {
-                            throw `Invalid data-group-series instruction from html. 
-                                   Must be valid JSON: "None" or "All" or an array
-                                   of arrays containing the series to be grouped
-                                   together. All strings must be double-quoted.`;
-                        }
-                        return seriesGroups;
-                    } // end groupSeries()
-
-                    
-                    /* HEADINGS */
-                        headings.html(d => '<strong>' + view.label(model, d.key) + '</strong>');
-
-                    /* SVGS */
-                    
-                    SVGs.each(function(d,i){
-                        var SVG = d3.select(this),
-                            data = SVG.data(),
-                            units,
-                            seriesGroups = SVG
-                                .selectAll('series-groups')
-                                .data(data)
-                                .enter().append('g');
-
-                        function addYAxis(repeated = '', showUnits = false){  // !! NOT PROGRAMMATIC
-                            /* jshint validthis: true */ /* <- comment keeps jshint from falsely warning that
-                                                               `this` will be undefined. the .call() method
-                                                               defines `this` */
-                            d3.select(this).append('g')
-                              .attr('class', () => 'axis y-axis ' + repeated)
-                              .call(d3.axisLeft(y).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(5));
-
-                            if ( showUnits ) {
-                            
-                            d3.select(this).append('text')
-                              .attr('class', 'units')
-                              .attr('transform', () => `translate(-${marginLeft},-${marginTop - 10})`)
-                              .text(() => units.removeUnderscores());
-                            }
-                        }
-
-                        /* PATHS */
-
-                        if ( config.type === 'line' ){
-                            seriesGroups // !! NOT PROGRAMMATIC , IE, TYPE NEEDS TO BE SPECIFIED BY config.type
-                                .selectAll('series')
-                                .data(d => {
-                                    return d;
-                                })
-                                .enter().append('path')
-                                .attr('class', () => {
-                                    return 'line line-' + lineIndex++;
-
-                                })
-                                .attr('d', (d,j) => {
-                                    units = d.values[1].units;
-                                    if ( scaleInstruct.indexOf(d.key) !== -1 ){ // TODO: resetting scale make the series min,max from the
-                                                                                // series' own data, not the one it's grouped with 
-                                        /* NOT PROGRAMMATIC */ minY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].min < 0 ? model.summaries[1][datum.key][d.key][view.activeField + '_value'].min : 0;
-                                        /* NOT PROGRAMMATIC */ maxY = model.summaries[1][datum.key][d.key][view.activeField + '_value'].max > Math.abs(minY / 2) ? model.summaries[1][datum.key][d.key][view.activeField + '_value'].max : Math.abs(minY / 2);
-                                        x = d3.scaleTime().range([0, width]).domain([parseTime(minX),parseTime(maxX)]);
-                                        y = d3.scaleLinear().range([height, 0]).domain([minY,maxY]);
-                                        if ( i !== 0 && j === 0 ) {
-                                            addYAxis.call(this,'', true);
-                                        } 
-                                    } else if ( i !== 0 && j === 0 ) {
-                                         addYAxis.call(this,'repeated');
-                                    }
-                                    d.values.unshift({year:2015,[view.activeField + '_value']:0}); //TO DO: put in data
-                                    return valueline(d.values);
-                                })
-                                .each(d => {
-                                   // var data = d3.select(this).data();
-                                    if (config.directLabel){
-                                        SVG.append('text')
-                                            .attr('class', () => 'series-label series-' + seriesIndex++)
-                                            .html(() => '<tspan x="0">' + view.label(d.key).replace(/\\n/g,'</tspan><tspan x="0" dy="1.2em">') + '</tspan>')
-                                            .attr('transform', () => `translate(${width + 3},${y(d.values[d.values.length - 1][view.activeField + '_value']) + 3})`);
-                                    }
-                                });
-
-                            /* X AXIS */
-
-                            SVG.append('g')
-                                .attr('transform', 'translate(0,' + y(0) + ')')
-                                .attr('class', 'axis x-axis')
-                                .call(d3.axisBottom(x).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).tickValues([parseTime(2025),parseTime(2035),parseTime(2045)]));
-                            
-                            /* Y AXIS */    
-                            if ( i === 0 ) { // i here is from the SVG.each loop. append yAxis to all first SVGs of chartDiv
-                                addYAxis.call(this, '', true);
-                            }
-                        } // end if type === 'line'
-                    }); // end SVGs.each()
-                }); // end chartDivs.each()
-            } // end view.setupCharts()
-        }, // end view
-
-        controller: {
-            initController: function(container, model){//, view){
-                model.init(container).then(values => {
-                    console.log(values);
-                    model.data = values[0];
-                  //  model.dictionary = values[1].undefined.undefined; // !! NOT PROGRAMMATIC / CONSISTENT
-                  //  model.summarizeData();
-                 //   view.init(container, model);
-                });
-            }
-        }
+                var group = this;
+                d3.select(container).selectAll('.d3-chart')
+                    .each(function(d,i){
+                        var chartType = this.dataset.type || group.config.type;
+                        group.chartCollection.push(new Charts[constructors[chartType]](this, i, group));
+                    });
+            }        
     }; // D3ChartGroup prototype ends here
     
     window.D3Charts = { // need to specify window bc after transpiling all this will be wrapped in IIFEs
@@ -319,9 +159,9 @@ var D3Charts = (function(){
         Init(){
             var groupDivs = document.querySelectorAll('.d3-group');
             for ( let i = 0; i < groupDivs.length; i++ ){
-                chartCollection.push(new D3ChartGroup(groupDivs[i], i));
+                groupCollection.push(new D3ChartGroup(groupDivs[i], i));
             }
-            console.log(chartCollection);
+            console.log(groupCollection);
         }
     };
 }()); // end var D3Charts IIFE
