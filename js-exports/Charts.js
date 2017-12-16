@@ -10,6 +10,8 @@ export const Charts = (function(){
             // will come from up the inheritance chain
         this.datum = parent.data.find(each => each.key === this.config.category);
         this.seriesGroups = this.groupSeries();
+        this.dictionary = this.parent.dictionary;
+        this.addHeading();
         this.createCharts();
 
     };
@@ -44,8 +46,15 @@ export const Charts = (function(){
                        together. All strings must be double-quoted.`;
             }
             return seriesGroups;
-        } // end groupSeries()
-
+        }, // end groupSeries()
+        addHeading(){
+            d3.select(this.container)
+                .append('p')
+                .html('<strong>' + this.label(this.config.category) + '</strong>');
+        },
+        label(key){
+            return this.dictionary.find(each => each.key === key).label;
+        }
 
     }; // end LineChart.prototype
 
@@ -58,25 +67,31 @@ export const Charts = (function(){
         this.marginLeft = +this.config.marginLeft || this.defaultMargins.left;
         this.width = this.config.svgWidth ? +this.config.svgWidth - this.marginRight - this.marginLeft : 320 - this.marginRight - this.marginLeft;
         this.height = this.config.svgHeight ? +this.config.svgHeight - this.marginTop - this.marginBottom : ( this.width + this.marginRight + this.marginLeft ) / 2 - this.marginTop - this.marginBottom;
-        this.container = this.init(parent.container);
         console.log(this);
+        this.container = this.init(parent.container);
+
+        // TO DO set max,min, etc from summaries; set scales, etc. all that can be Chart prototype.
         
     };
 
     LineChart.prototype = {
         init(chartDiv){
-            return d3.select(chartDiv)
+            var svg =  d3.select(chartDiv)
                 .append('svg')
                 .attr('width', this.width + this.marginRight + this.marginLeft )
-                .attr('height', this.height  + this.marginTop + this.marginBottom )
-                .node();
+                .attr('height', this.height  + this.marginTop + this.marginBottom );
+
+            svg.append('g')
+                .attr('transform',`translate(${this.marginLeft}, ${this.marginRight})`);
+
+            return svg.node();
         },
         defaultMargins: {
             top:20,
             right:45,
             bottom:15,
             left:35
-        }
+        }        
     };
 
 
