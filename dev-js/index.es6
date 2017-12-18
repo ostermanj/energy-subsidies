@@ -58,6 +58,7 @@ var D3Charts = (function(){
                              // and nesting and rolling up cannot be done easily at the same time, so they're done separately.
                              // the summaries provide average, max, min of all fields in the data at all levels of nesting. 
                              // the first (index 0) is one layer nested, the second is two, and so on.
+                
                 var summaries = [];
                 var variables = Object.keys(this.unnested[0]); // all need to have the same fields
                 var nestBy = this.config.nestBy ? this.config.nestBy.map(each => each) : false; 
