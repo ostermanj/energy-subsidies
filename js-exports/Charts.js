@@ -4,6 +4,7 @@ export const Charts = (function(){
         this.container = container;
         this.parent = parent;
         this.children = [];
+        this.seriesCount = 0;
         this.config = Object.create( parent.config, Object.getOwnPropertyDescriptors( container.dataset.convert() ) );
             // line above creates a config object from the HTML dataset for the chartDiv container
             // that inherits from the parents config object. any configs not specified for the chartDiv (an own property)
@@ -117,7 +118,13 @@ export const Charts = (function(){
             this.eachSeries = svg.selectAll('each-series')
                 .data(this.data)
                 .enter().append('g')
-                .attr('class', 'each-series');
+                .attr('class', () => {
+                    return 'each-series series-' + this.parent.seriesCount + ' color-' + this.parent.seriesCount++ % 3;
+                });
+/*
+            this.eachSeries.each((d,i,array) => {
+                this.parent.seriesArray.push(array[i]);
+            });*/
 
 
 
@@ -169,7 +176,7 @@ export const Charts = (function(){
                 .y(d => this.yScale(d[this.config.variableY])); // !! not programmatic
             
             this.eachSeries.append('path')
-                .attr('class','line')
+                .attr('class','line line-')
                 .attr('d', (d) => {
                     return valueline(d.values);
                 });

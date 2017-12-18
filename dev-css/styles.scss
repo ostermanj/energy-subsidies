@@ -15,18 +15,24 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
 
 .d3-chart {
     margin-bottom: 1em;
+    .color-0 {
+        .line {
+            stroke: $blue;
+        }
+    }
+    .color-1 {
+        .line {
+            stroke: $green;
+        }
+    }
+    .color-2 {
+        .line {
+            stroke: $gold;
+        }
+    }
     & .line {
         stroke-width: 2px;
         stroke: black;
-        &.line-0 {
-            stroke: $blue;
-        }
-        &.line-1 {
-            stroke: $green;
-        }
-        &.line-2 {
-            stroke: $gold;
-        }
     }
     svg {
         path {
