@@ -9,9 +9,23 @@ export const Charts = (function(){
             // that inherits from the parents config object. any configs not specified for the chartDiv (an own property)
             // will come from up the inheritance chain
         this.datum = parent.data.find(each => each.key === this.config.category);
+        var seriesInstruct = this.config.series || 'all';
+        console.log(seriesInstruct);
+        if ( Array.isArray(seriesInstruct) ){
+            console.log('is array', this.datum.values);
+            this.datum.values = this.datum.values.filter(each => {
+                console.log(each.key);
+                return seriesInstruct.indexOf(each.key) !== -1;
+            });
+        } else if ( seriesInstruct !== 'all' ){
+            console.log(`Invalid instruction from HTML for which categories to include 
+                    (var seriesInstruct). Fallback to all.`);
+        }
         this.seriesGroups = this.groupSeries();
         this.dictionary = this.parent.dictionary;
-        this.addHeading();
+        if ( this.config.heading !== false ){
+            this.addHeading(this.config.heading);
+        }
         this.createCharts();
 
     };
@@ -40,17 +54,21 @@ export const Charts = (function(){
             } else if ( groupsInstruct === 'all' ) {
                 seriesGroups = [this.datum.values.map(each => each)];
             } else {
-                throw `Invalid data-group-series instruction from html. 
+                console.log(`Invalid data-group-series instruction from html. 
                        Must be valid JSON: "None" or "All" or an array
                        of arrays containing the series to be grouped
-                       together. All strings must be double-quoted.`;
+                       together. All strings must be double-quoted.`);
             }
             return seriesGroups;
         }, // end groupSeries()
-        addHeading(){
+        addHeading(input){
+            console.log(input);
             d3.select(this.container)
                 .append('p')
-                .html('<strong>' + this.label(this.config.category) + '</strong>');
+                .html(() => {
+                    var heading = typeof input === 'string' ? input : this.label(this.config.category);
+                    return '<strong>' + heading + '</strong>';
+                });
         },
         label(key){
             return this.dictionary.find(each => each.key === key).label;
