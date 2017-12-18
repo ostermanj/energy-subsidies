@@ -17,6 +17,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
     margin-bottom: 1em;
     & .line {
         stroke-width: 2px;
+        stroke: black;
         &.line-0 {
             stroke: $blue;
         }

@@ -12,7 +12,8 @@
   margin-bottom: 1em; }
 
 .d3-chart .line {
-    stroke-width: 2px; }
+    stroke-width: 2px;
+    stroke: black; }
 
 .d3-chart .line.line-0 {
       stroke: #041937; }

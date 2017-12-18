@@ -92,15 +92,9 @@ export const Charts = (function(){
         this.yScaleType = this.config.yScaleType || 'linear';
         this.xTimeType = this.config.xTimeType || '%Y';
         this.scaleBy = this.config.scaleBy || 'series-group';
-        this.setScales();
-        /*if ( this.config.series === 'all' && this.config.seriesGroup === 'all' ){
-            this.summary = this.parent.parent.summaries[0][this.category];
-        }
-        if (this)*/
-        
-
-        // TO DO set max,min, etc from summaries; set scales, etc. all that can be Chart prototype.
-        
+        this.setScales(); // //SHOULD BE IN CHART PROTOTYPE 
+        this.addLines();
+               
     };
 
     LineChart.prototype = { // each LineChart is an svg that hold grouped series
@@ -111,25 +105,25 @@ export const Charts = (function(){
             left:35
         },
               
-        init(chartDiv){ // this is called once for each seriesGroup of each category. 
+        init(chartDiv){ // //SHOULD BE IN CHART PROTOTYPE this is called once for each seriesGroup of each category. 
             var container =  d3.select(chartDiv)
                 .append('svg')
                 .attr('width', this.width + this.marginRight + this.marginLeft )
                 .attr('height', this.height  + this.marginTop + this.marginBottom );
 
             var svg = container.append('g')
-                .attr('transform',`translate(${this.marginLeft}, ${this.marginRight})`);
+                .attr('transform',`translate(${this.marginLeft}, ${this.marginTop})`);
 
-            svg.selectAll('one-series')
+            this.eachSeries = svg.selectAll('each-series')
                 .data(this.data)
                 .enter().append('g')
-                .attr('class', 'one-series');
+                .attr('class', 'each-series');
 
 
 
             return container.node();
         },
-        setScales(){ // TO DO: SET SCALES FOR OTHER GROUP TYPES
+        setScales(){ //SHOULD BE IN CHART PROTOTYPE // TO DO: SET SCALES FOR OTHER GROUP TYPES
             var d3Scale = {
                 time: d3.scaleTime(),
                 linear: d3.scaleLinear()
@@ -151,7 +145,7 @@ export const Charts = (function(){
             this.yMin = d3.min(yMins);
 
             var xRange = [0, this.width],
-                yRange = [this.width, 0],
+                yRange = [this.height, 0],
                 xDomain,
                 yDomain;
             if ( this.xScaleType === 'time') {
@@ -168,6 +162,17 @@ export const Charts = (function(){
             this.xScale = d3Scale[this.xScaleType].domain(xDomain).range(xRange);
             this.yScale = d3Scale[this.yScaleType].domain(yDomain).range(yRange);
 
+        },
+        addLines(){
+            var valueline = d3.line()
+                .x(d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX]))) // !! not programmatic
+                .y(d => this.yScale(d[this.config.variableY])); // !! not programmatic
+            
+            this.eachSeries.append('path')
+                .attr('class','line')
+                .attr('d', (d) => {
+                    return valueline(d.values);
+                });
         }
     };
 
