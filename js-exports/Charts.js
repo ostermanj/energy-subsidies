@@ -76,6 +76,10 @@ export const Charts = (function(){
         },
         units(key){
             return this.dictionary.find(each => each.key === key).units;  
+        },
+        tipText(key){
+            var str = this.dictionary.find(each => each.key === key).label.replace(/\\n/g,' ');
+            return str.charAt(0).toUpperCase() + str.slice(1);
         }
 
     }; // end LineChart.prototype
@@ -247,6 +251,7 @@ export const Charts = (function(){
                 .attr('transform', (d) => `translate(${this.width + 5}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`);
         },
         addPoints(){
+            
             this.points = this.eachSeries.selectAll('points')
                 .data(d => d.values)
                 .enter().append('circle')
@@ -254,16 +259,29 @@ export const Charts = (function(){
                 .attr('r', '4')
                 .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
                 .attr('cy', d => this.yScale(d[this.config.variableY]))
-                .on('mouseover', this.tooltip.show)
-                .on('mouseout', this.tooltip.hide)
+                .on('mouseover', (d,i,array) => {
+                    console.log(d);
+                    var klass = array[i].parentNode.classList.value.match(/color-\d/)[0]; // get the color class of the parent g
+                    this.tooltip.attr('class', this.tooltip.attr('class') + ' ' + klass);
+                    this.tooltip.html('<strong>' + this.parent.tipText(d.series) + '</strong> (' + d.year + ')<br />' + d[this.config.variableY] + ' ' + this.parent.units(d.series) );
+                    this.tooltip.show();
+                })
+                .on('mouseout', () => {
+                    this.tooltip.attr('class', this.tooltip.attr('class').replace(/ color-\d/g, ''));
+                    this.tooltip.html('');
+                    this.tooltip.hide();
+                })
                 .call(this.tooltip);
+
+            
         },
         setTooltips(){
+
             this.tooltip = d3.tip()
                 .attr("class", "d3-tip")
                 .direction('n')
-                .offset([-8, 0])
-                .html(() => 'hello');
+                .offset([-8, 0]);
+                
         }
     };
 

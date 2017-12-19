@@ -94,23 +94,40 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
     display: none;
 }
 
-
+.d3-tip.color-0 {
+    border-color: $blue;
+    &:after {
+        color: $blue;
+    }
+}
+.d3-tip.color-1 {
+    border-color: $green;
+    &:after {
+        color: $green;
+    }
+}
+.d3-tip.color-2 {
+    border-color: $gold;
+    &:after {
+        color: $gold;
+    }
+}
 
 /* d3-tip css TO DO  add as import or separate file */
 
 .d3-tip {
     padding: 10px;
-    background: white;
+    background: rgba(255,255,255,0.9);
     color: $dark_gray;
     letter-spacing: 1px;
     opacity: 0;
     transition: opacity 0.5s linear;
     font-size: 75%;
     line-height: 120%;
-    z-index: 999999;
+    z-index: 9;
     width:33%;
-    max-width: 170px;
-    border: 1px solid $blue;
+    max-width: 200px;
+    border: 2px solid $dark_gray;
     
     &:after {
         box-sizing: border-box;
@@ -118,7 +135,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         font-size: 10px;
         width: 100%;
         line-height: 1;
-        color: $blue;
+        color: $dark_gray;
         position: absolute;
         pointer-events: none;
     }
