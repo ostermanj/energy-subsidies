@@ -97,6 +97,7 @@ export const Charts = (function(){
         this.xTimeType = this.config.xTimeType || '%Y';
         this.scaleBy = this.config.scaleBy || 'series-group';
         this.setScales(); // //SHOULD BE IN CHART PROTOTYPE 
+        this.setTooltips();
         this.addLines();
         this.addPoints();
         this.addXAxis();
@@ -106,7 +107,6 @@ export const Charts = (function(){
         } else {
             // this.addLegends();
         }
-        this.setTooltips();
                
     };
 
@@ -253,7 +253,10 @@ export const Charts = (function(){
                 .attr('class', 'data-point')
                 .attr('r', '4')
                 .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
-                .attr('cy', d => this.yScale(d[this.config.variableY]));
+                .attr('cy', d => this.yScale(d[this.config.variableY]))
+                .on('mouseover', this.tooltip.show)
+                .on('mouseout', this.tooltip.hide)
+                .call(this.tooltip);
         },
         setTooltips(){
             this.tooltip = d3.tip()

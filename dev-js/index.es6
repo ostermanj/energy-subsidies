@@ -1,14 +1,15 @@
- /* exported D3Charts, Helpers */ // let's jshint know that D3Charts can be "defined but not used" in this file
+ /* exported D3Charts, Helpers, d3Tip */ // let's jshint know that D3Charts can be "defined but not used" in this file
  /* polyfills needed: Promise, Array.isArray, Array.find, Array.filter
 
  */
 import { Helpers } from '../js-exports/Helpers';
 import { Charts } from '../js-exports/Charts';
+import { d3Tip } from '../js-vendor/d3-tip';
 
 var D3Charts = (function(){
 
 "use strict"; 
-    
+     
     var groupCollection = [];
     var D3ChartGroup = function(container, index){
         console.log(index);
