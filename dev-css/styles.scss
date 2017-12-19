@@ -19,15 +19,24 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         .line {
             stroke: $blue;
         }
+        .series-label {
+            fill: $blue;
+        }
     }
     .color-1 {
         .line {
             stroke: $green;
         }
+        .series-label {
+            fill: $green;
+        }
     }
     .color-2 {
         .line {
             stroke: $gold;
+        }
+        .series-label {
+            fill: $gold;
         }
     }
     & .line {

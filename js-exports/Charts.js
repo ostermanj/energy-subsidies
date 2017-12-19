@@ -73,6 +73,9 @@ export const Charts = (function(){
         },
         label(key){
             return this.dictionary.find(each => each.key === key).label;
+        },
+        units(key){
+            return this.dictionary.find(each => each.key === key).units;  
         }
 
     }; // end LineChart.prototype
@@ -97,6 +100,9 @@ export const Charts = (function(){
         this.addLines();
         this.addXAxis();
         this.addYAxis();
+        if ( this.config.directLabel === true ){
+            this.addLabels();
+        }
                
     };
 
@@ -184,7 +190,7 @@ export const Charts = (function(){
                 .y(d => this.yScale(d[this.config.variableY])); // !! not programmatic
             
             this.eachSeries.append('path')
-                .attr('class','line line-')
+                .attr('class','line')
                 .attr('d', (d) => {
                     return valueline(d.values);
                 });
@@ -218,9 +224,23 @@ export const Charts = (function(){
                 .call(axis);
         },
         addYAxis(){
+            /* axis */
             this.svg.append('g')
               .attr('class', () => 'axis y-axis ')
               .call(d3.axisLeft(this.yScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(5));
+
+            /* labels */
+            this.eachSeries.append('text')
+              .attr('class', 'units')
+              .attr('transform', () => `translate(-${this.marginLeft},-${this.marginTop - 10})`)
+              .text((d,i) => i === 0 ? this.parent.units(d.key) : null);
+            
+        },
+        addLabels(){
+            this.eachSeries.append('text')
+                .attr('class', 'series-label')
+                .html((d) => '<tspan x="0">' + this.parent.label(d.key).replace(/\\n/g,'</tspan><tspan x="0" dy="1.2em">') + '</tspan>')
+                .attr('transform', (d) => `translate(${this.width + 3}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`);
         }
     };
 

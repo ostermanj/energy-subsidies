@@ -14,11 +14,20 @@
 .d3-chart .color-0 .line {
     stroke: #041937; }
 
+.d3-chart .color-0 .series-label {
+    fill: #041937; }
+
 .d3-chart .color-1 .line {
     stroke: #527E5A; }
 
+.d3-chart .color-1 .series-label {
+    fill: #527E5A; }
+
 .d3-chart .color-2 .line {
     stroke: #C99140; }
+
+.d3-chart .color-2 .series-label {
+    fill: #C99140; }
 
 .d3-chart .line {
     stroke-width: 2px;
