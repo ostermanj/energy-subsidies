@@ -95,6 +95,8 @@ export const Charts = (function(){
         this.scaleBy = this.config.scaleBy || 'series-group';
         this.setScales(); // //SHOULD BE IN CHART PROTOTYPE 
         this.addLines();
+        this.addXAxis();
+        this.addYAxis();
                
     };
 
@@ -112,10 +114,10 @@ export const Charts = (function(){
                 .attr('width', this.width + this.marginRight + this.marginLeft )
                 .attr('height', this.height  + this.marginTop + this.marginBottom );
 
-            var svg = container.append('g')
+            this.svg = container.append('g')
                 .attr('transform',`translate(${this.marginLeft}, ${this.marginTop})`);
 
-            this.eachSeries = svg.selectAll('each-series')
+            this.eachSeries = this.svg.selectAll('each-series')
                 .data(this.data)
                 .enter().append('g')
                 .attr('class', () => {
@@ -150,6 +152,7 @@ export const Charts = (function(){
             this.xMin = d3.min(xMins);
             this.yMax = d3.max(yMaxes);
             this.yMin = d3.min(yMins);
+            this.xValuesUnique = [];
 
             var xRange = [0, this.width],
                 yRange = [this.height, 0],
@@ -172,7 +175,12 @@ export const Charts = (function(){
         },
         addLines(){
             var valueline = d3.line()
-                .x(d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX]))) // !! not programmatic
+                .x(d => {
+                    if ( this.xValuesUnique.indexOf(d[this.config.variableX]) === -1 ){
+                        this.xValuesUnique.push(d[this.config.variableX]);
+                    }
+                    return this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX]));
+                }) 
                 .y(d => this.yScale(d[this.config.variableY])); // !! not programmatic
             
             this.eachSeries.append('path')
@@ -180,6 +188,39 @@ export const Charts = (function(){
                 .attr('d', (d) => {
                     return valueline(d.values);
                 });
+        },
+        addXAxis(){ // could be in Chart prototype ?
+            var yAxisPosition,
+                yAxisOffset,
+                axisType;
+
+            if ( this.config.yAxisPosition === 'zero' ){
+                yAxisPosition = 0;
+                yAxisOffset = 0;
+                axisType = d3.axisBottom;
+            }
+            else if ( this.config.yAxisPosition === 'top' ){
+                yAxisPosition = this.yMax;
+                yAxisOffset = -this.marginTop;
+                axisType = d3.axisTop;
+            } else {
+                yAxisPosition = this.yMin;
+                yAxisOffset = 0;
+                axisType = d3.axisBottom;
+            }
+            var axis = axisType(this.xScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1);
+            if ( this.xScaleType === 'time' ){
+                axis.tickValues(this.xValuesUnique.map(each => d3.timeParse(this.xTimeType)(each))); // TO DO: allow for other xAxis Adjustments
+            }
+            this.svg.append('g')
+                .attr('transform', 'translate(0,' + ( this.yScale(yAxisPosition) + yAxisOffset ) + ')') // not programatic placement of x-axis
+                .attr('class', 'axis x-axis')
+                .call(axis);
+        },
+        addYAxis(){
+            this.svg.append('g')
+              .attr('class', () => 'axis y-axis ')
+              .call(d3.axisLeft(this.yScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(5));
         }
     };
 

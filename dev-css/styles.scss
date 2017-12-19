@@ -71,4 +71,9 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
     }
 }
 
+/* specific to the demo */
+
+.x-axis .tick:first-of-type {
+    display: none;
+}
 

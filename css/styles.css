@@ -51,3 +51,8 @@
 
 .d3-chart svg .axis.repeated path.domain {
     display: none; }
+
+/* specific to the demo */
+
+.x-axis .tick:first-of-type {
+  display: none; }
