@@ -15,11 +15,15 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
 
 .d3-chart {
     margin-bottom: 1em;
+    .data-point {
+        stroke-width: 2px;
+        stroke: white;
+    }
     .color-0 {
         .line {
             stroke: $blue;
         }
-        .series-label {
+        .series-label, .data-point {
             fill: $blue;
         }
     }
@@ -27,7 +31,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         .line {
             stroke: $green;
         }
-        .series-label {
+        .series-label, .data-point {
             fill: $green;
         }
     }
@@ -35,7 +39,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         .line {
             stroke: $gold;
         }
-        .series-label {
+        .series-label, .data-point {
             fill: $gold;
         }
     }
@@ -86,3 +90,6 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
     display: none;
 }
 
+.data-point:first-of-type {
+    display: none;
+}

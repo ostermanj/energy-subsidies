@@ -1,5 +1,5 @@
 export const Charts = (function(){
-    
+
     var ChartDiv = function(container, parent){
         this.container = container;
         this.parent = parent;
@@ -98,11 +98,15 @@ export const Charts = (function(){
         this.scaleBy = this.config.scaleBy || 'series-group';
         this.setScales(); // //SHOULD BE IN CHART PROTOTYPE 
         this.addLines();
+        this.addPoints();
         this.addXAxis();
         this.addYAxis();
         if ( this.config.directLabel === true ){
             this.addLabels();
+        } else {
+            // this.addLegends();
         }
+        this.setTooltips();
                
     };
 
@@ -189,7 +193,7 @@ export const Charts = (function(){
                 }) 
                 .y(d => this.yScale(d[this.config.variableY])); // !! not programmatic
             
-            this.eachSeries.append('path')
+            this.lines = this.eachSeries.append('path')
                 .attr('class','line')
                 .attr('d', (d) => {
                     return valueline(d.values);
@@ -240,7 +244,23 @@ export const Charts = (function(){
             this.eachSeries.append('text')
                 .attr('class', 'series-label')
                 .html((d) => '<tspan x="0">' + this.parent.label(d.key).replace(/\\n/g,'</tspan><tspan x="0" dy="1.2em">') + '</tspan>')
-                .attr('transform', (d) => `translate(${this.width + 3}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`);
+                .attr('transform', (d) => `translate(${this.width + 5}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`);
+        },
+        addPoints(){
+            this.points = this.eachSeries.selectAll('points')
+                .data(d => d.values)
+                .enter().append('circle')
+                .attr('class', 'data-point')
+                .attr('r', '4')
+                .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
+                .attr('cy', d => this.yScale(d[this.config.variableY]));
+        },
+        setTooltips(){
+            this.tooltip = d3.tip()
+                .attr("class", "d3-tip")
+                .direction('n')
+                .offset([-8, 0])
+                .html(() => 'hello');
         }
     };
 
