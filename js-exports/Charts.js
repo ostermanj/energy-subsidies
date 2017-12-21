@@ -11,11 +11,11 @@ export const Charts = (function(){
             // will come from up the inheritance chain
         this.datum = parent.data.find(each => each.key === this.config.category);
         var seriesInstruct = this.config.series || 'all';
-        console.log(seriesInstruct);
+        
         if ( Array.isArray(seriesInstruct) ){
-            console.log('is array', this.datum.values);
+            
             this.datum.values = this.datum.values.filter(each => {
-                console.log(each.key);
+                
                 return seriesInstruct.indexOf(each.key) !== -1;
             });
         } else if ( seriesInstruct !== 'all' ){
@@ -63,7 +63,7 @@ export const Charts = (function(){
             return seriesGroups;
         }, // end groupSeries()
         addHeading(input){
-            console.log(input);
+            
             d3.select(this.container)
                 .append('p')
                 .html(() => {
@@ -94,7 +94,7 @@ export const Charts = (function(){
         this.width = this.config.svgWidth ? +this.config.svgWidth - this.marginRight - this.marginLeft : 320 - this.marginRight - this.marginLeft;
         this.height = this.config.svgHeight ? +this.config.svgHeight - this.marginTop - this.marginBottom : ( this.width + this.marginRight + this.marginLeft ) / 2 - this.marginTop - this.marginBottom;
         this.data = seriesGroup;
-        console.log(this);
+        
         this.container = this.init(parent.container); // TO DO  this is kinda weird
         this.xScaleType = this.config.xScaleType || 'time';
         this.yScaleType = this.config.yScaleType || 'linear';
@@ -146,7 +146,13 @@ export const Charts = (function(){
                 this.parent.seriesArray.push(array[i]);
             });*/
             if ( this.config.stackSeries && this.config.stackSeries === true ){
-                var forStacking = this.data.reduce((acc,cur,i) => {
+                this.prepareStacking();
+            }
+
+            return container.node();
+        },
+        prepareStacking(){
+            var forStacking = this.data.reduce((acc,cur,i) => {
                     
                     if ( i === 0 ){
                         cur.values.forEach(each => {
@@ -163,19 +169,17 @@ export const Charts = (function(){
                     return acc;
                 },[]);
 
-                console.log(this.data.map(each => each.key));
+                
                 this.stack = d3.stack()
                     .keys(this.data.map(each => each.key))
                     .order(d3.stackOrderNone)
                     .offset(d3.stackOffsetNone);
                 
-                console.log(this, forStacking, this.data.map(each => each.key), this.stack(forStacking));
-                this.areaData = this.stack(forStacking);
-            }
-
-            return container.node();
+                
+                this.stackData = this.stack(forStacking);
         },
         setScales(){ //SHOULD BE IN CHART PROTOTYPE // TO DO: SET SCALES FOR OTHER GROUP TYPES
+
             var d3Scale = {
                 time: d3.scaleTime(),
                 linear: d3.scaleLinear()
@@ -184,7 +188,7 @@ export const Charts = (function(){
             var xMaxes = [], xMins = [], yMaxes = [], yMins = [];
             if ( this.scaleBy === 'series-group' ){
                 this.data.forEach(each => {
-                    console.log(each, this.parent.parent.summaries[1]);
+                    
                     xMaxes.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableX].max);
                     xMins.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableX].min);
                     yMaxes.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableY].max);
@@ -197,6 +201,19 @@ export const Charts = (function(){
             this.yMin = d3.min(yMins);
             this.xValuesUnique = [];
 
+            if ( this.config.stackSeries && this.config.stackSeries === true ){
+                console.log(this.stackData);
+                var yValues = this.stackData.reduce((acc, cur) => {
+                    console.log(cur);
+                    acc.push(...cur.reduce((acc1, cur1) => {
+                        acc1.push(cur1[0], cur1[1]);
+                        return acc1;
+                    },[]));
+                    return acc;
+                },[]);
+                this.yMax = d3.max(yValues);
+                this.yMin = d3.min(yValues);
+            }
             var xRange = [0, this.width],
                 yRange = [this.height, 0],
                 xDomain,
@@ -214,6 +231,7 @@ export const Charts = (function(){
 
             this.xScale = d3Scale[this.xScaleType].domain(xDomain).range(xRange);
             this.yScale = d3Scale[this.yScaleType].domain(yDomain).range(yRange);
+
 
         },
         addLines(){
@@ -233,8 +251,8 @@ export const Charts = (function(){
                     }
                     return this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX]));
                 }) 
-                .y((d,i,array) => {
-                    console.log(this,d,i,array);
+                .y((d) => {
+                    
                     return this.yScale(d[this.config.variableY]);
                 });
             
@@ -255,7 +273,7 @@ export const Charts = (function(){
 
                 stackGroup    
                     .selectAll('stacked-area')
-                    .data(this.areaData)
+                    .data(this.stackData)
                     .enter().append('path')
                     .attr('class', (d,i) => 'area-line color-' + i) // TO DO not quite right that color shold be `i`
                                                                          // if you have more than one group of series, will repeat
@@ -263,7 +281,7 @@ export const Charts = (function(){
 
                 stackGroup
                     .selectAll('stacked-line')
-                    .data(this.areaData)
+                    .data(this.stackData)
                     .enter().append('path')
                     .attr('class', (d,i) => 'line color-' + i) 
                     .attr('d', d => line(d));
@@ -281,7 +299,7 @@ export const Charts = (function(){
                     })
                     .on('end', (d,i,array) => {
                         if ( i === array.length - 1 ){
-                            console.log(this,d,i,array);
+                            
                             this.addPoints();
                             this.addLabels();
                         }
@@ -346,7 +364,7 @@ export const Charts = (function(){
                 .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
                 .attr('cy', d => this.yScale(d[this.config.variableY]))
                 .on('mouseover', (d,i,array) => {
-                    console.log(d);
+                    
                     var klass = array[i].parentNode.classList.value.match(/color-\d/)[0]; // get the color class of the parent g
                     this.tooltip.attr('class', this.tooltip.attr('class') + ' ' + klass);
                     this.tooltip.html('<strong>' + this.parent.tipText(d.series) + '</strong> (' + d.year + ')<br />' + d[this.config.variableY] + ' ' + this.parent.units(d.series) );

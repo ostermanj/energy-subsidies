@@ -12,14 +12,14 @@ var D3Charts = (function(){
      
     var groupCollection = [];
     var D3ChartGroup = function(container, index){
-        console.log(index);
+        
         this.container = container;
         this.index = index;
         this.config = container.dataset.convert();
-        console.log(this.config.nestBy.toString());
+        
         this.dataPromises = this.returnDataPromises(container);
         this.children = [];
-        console.log(this.dataPromises);
+        
         //this.controller.initController(container, this.model, this.view);
         this.dataPromises.then(() => {
             this.initializeCharts(container);
@@ -159,7 +159,7 @@ var D3Charts = (function(){
             for ( let i = 0; i < groupDivs.length; i++ ){
                 groupCollection.push(new D3ChartGroup(groupDivs[i], i));
             }
-            console.log(groupCollection);
+            
         }
     };
 }()); // end var D3Charts IIFE
