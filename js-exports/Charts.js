@@ -95,7 +95,7 @@ export const Charts = (function(){
         this.height = this.config.svgHeight ? +this.config.svgHeight - this.marginTop - this.marginBottom : ( this.width + this.marginRight + this.marginLeft ) / 2 - this.marginTop - this.marginBottom;
         this.data = seriesGroup;
         console.log(this);
-        this.container = this.init(parent.container);
+        this.container = this.init(parent.container); // TO DO  this is kinda weird
         this.xScaleType = this.config.xScaleType || 'time';
         this.yScaleType = this.config.yScaleType || 'linear';
         this.xTimeType = this.config.xTimeType || '%Y';
@@ -103,11 +103,11 @@ export const Charts = (function(){
         this.setScales(); // //SHOULD BE IN CHART PROTOTYPE 
         this.setTooltips();
         this.addLines();
-        this.addPoints();
+      //  this.addPoints();
         this.addXAxis();
         this.addYAxis();
         if ( this.config.directLabel === true ){
-            this.addLabels();
+        //    this.addLabels();
         } else {
             // this.addLegends();
         }
@@ -131,6 +131,10 @@ export const Charts = (function(){
             this.svg = container.append('g')
                 .attr('transform',`translate(${this.marginLeft}, ${this.marginTop})`);
 
+            this.xAxisGroup = this.svg.append('g');
+
+            this.yAxisGroup = this.svg.append('g');
+
             this.eachSeries = this.svg.selectAll('each-series')
                 .data(this.data)
                 .enter().append('g')
@@ -141,8 +145,33 @@ export const Charts = (function(){
             this.eachSeries.each((d,i,array) => {
                 this.parent.seriesArray.push(array[i]);
             });*/
+            if ( this.config.stackSeries && this.config.stackSeries === true ){
+                var forStacking = this.data.reduce((acc,cur,i) => {
+                    
+                    if ( i === 0 ){
+                        cur.values.forEach(each => {
+                            acc.push({
+                                [this.config.variableX]: each[this.config.variableX],
+                                [cur.key]: each[this.config.variableY]
+                            });
+                        });
+                    } else {
+                        cur.values.forEach(each => {
+                            acc.find(obj => obj[this.config.variableX] === each[this.config.variableX])[cur.key] = each[this.config.variableY];
+                        });
+                    }
+                    return acc;
+                },[]);
 
-
+                console.log(this.data.map(each => each.key));
+                this.stack = d3.stack()
+                    .keys(this.data.map(each => each.key))
+                    .order(d3.stackOrderNone)
+                    .offset(d3.stackOffsetNone);
+                
+                console.log(this, forStacking, this.data.map(each => each.key), this.stack(forStacking));
+                this.areaData = this.stack(forStacking);
+            }
 
             return container.node();
         },
@@ -188,6 +217,15 @@ export const Charts = (function(){
 
         },
         addLines(){
+            var zeroValueline = d3.line()
+                .x(d => {
+                    if ( this.xValuesUnique.indexOf(d[this.config.variableX]) === -1 ){
+                        this.xValuesUnique.push(d[this.config.variableX]);
+                    }
+                    return this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX]));
+                }) 
+                .y(() => this.yScale(0));
+
             var valueline = d3.line()
                 .x(d => {
                     if ( this.xValuesUnique.indexOf(d[this.config.variableX]) === -1 ){
@@ -195,13 +233,60 @@ export const Charts = (function(){
                     }
                     return this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX]));
                 }) 
-                .y(d => this.yScale(d[this.config.variableY])); // !! not programmatic
-            
-            this.lines = this.eachSeries.append('path')
-                .attr('class','line')
-                .attr('d', (d) => {
-                    return valueline(d.values);
+                .y((d,i,array) => {
+                    console.log(this,d,i,array);
+                    return this.yScale(d[this.config.variableY]);
                 });
+            
+            if ( this.config.stackSeries && this.config.stackSeries === true ){
+                
+                var area = d3.area()
+                    .x(d => this.xScale(d3.timeParse(this.xTimeType)(d.data[this.config.variableX])))
+                    .y0(d => this.yScale(d[0]))
+                    .y1(d => this.yScale(d[1]));
+
+                var line = d3.line()
+                    .x(d => this.xScale(d3.timeParse(this.xTimeType)(d.data[this.config.variableX])))
+                    .y(d => this.yScale(d[1]));
+
+                var stackGroup = this.svg.append('g')
+                    .attr('class', 'stacked-area');
+                    
+
+                stackGroup    
+                    .selectAll('stacked-area')
+                    .data(this.areaData)
+                    .enter().append('path')
+                    .attr('class', (d,i) => 'area-line color-' + i) // TO DO not quite right that color shold be `i`
+                                                                         // if you have more than one group of series, will repeat
+                    .attr('d', d => area(d));
+
+                stackGroup
+                    .selectAll('stacked-line')
+                    .data(this.areaData)
+                    .enter().append('path')
+                    .attr('class', (d,i) => 'line color-' + i) 
+                    .attr('d', d => line(d));
+
+                
+            } else {
+                this.lines = this.eachSeries.append('path')
+                    .attr('class','line')
+                    .attr('d', (d) => {
+                        return zeroValueline(d.values);
+                    })
+                    .transition().duration(500).delay(150)
+                    .attr('d', (d) => {
+                        return valueline(d.values);
+                    })
+                    .on('end', (d,i,array) => {
+                        if ( i === array.length - 1 ){
+                            console.log(this,d,i,array);
+                            this.addPoints();
+                            this.addLabels();
+                        }
+                    });
+            }
         },
         addXAxis(){ // could be in Chart prototype ?
             var yAxisPosition,
@@ -226,14 +311,14 @@ export const Charts = (function(){
             if ( this.xScaleType === 'time' ){
                 axis.tickValues(this.xValuesUnique.map(each => d3.timeParse(this.xTimeType)(each))); // TO DO: allow for other xAxis Adjustments
             }
-            this.svg.append('g')
+            this.xAxisGroup
                 .attr('transform', 'translate(0,' + ( this.yScale(yAxisPosition) + yAxisOffset ) + ')') // not programatic placement of x-axis
                 .attr('class', 'axis x-axis')
                 .call(axis);
         },
         addYAxis(){
             /* axis */
-            this.svg.append('g')
+            this.yAxisGroup
               .attr('class', () => 'axis y-axis ')
               .call(d3.axisLeft(this.yScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(5));
 
@@ -255,6 +340,7 @@ export const Charts = (function(){
             this.points = this.eachSeries.selectAll('points')
                 .data(d => d.values)
                 .enter().append('circle')
+                .attr('opacity', 0)
                 .attr('class', 'data-point')
                 .attr('r', '4')
                 .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
@@ -271,7 +357,9 @@ export const Charts = (function(){
                     this.tooltip.html('');
                     this.tooltip.hide();
                 })
-                .call(this.tooltip);
+                .call(this.tooltip)
+                .transition().duration(500)
+                .attr('opacity', 1);
 
             
         },

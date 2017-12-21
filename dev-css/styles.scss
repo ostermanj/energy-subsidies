@@ -20,27 +20,36 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         stroke: white;
     }
     .color-0 {
-        .line {
+        .line, &.line {
             stroke: $blue;
         }
         .series-label, .data-point {
             fill: $blue;
         }
+        &.area-line {
+            fill: rgba($blue, 0.3);
+        }
     }
     .color-1 {
-        .line {
+        .line, &.line {
             stroke: $green;
         }
         .series-label, .data-point {
             fill: $green;
         }
+        &.area-line {
+            fill: rgba($green, 0.3);
+        }
     }
     .color-2 {
-        .line {
+        .line, &.line {
             stroke: $gold;
         }
         .series-label, .data-point {
             fill: $gold;
+        }
+        &.area-line {
+            fill: rgba($gold, 0.3);
         }
     }
     & .line {
