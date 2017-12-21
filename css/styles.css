@@ -13,7 +13,8 @@
 
 .d3-chart .data-point {
     stroke-width: 2px;
-    stroke: white; }
+    stroke: white;
+    cursor: pointer; }
 
 .d3-chart .color-0 .line, .d3-chart .color-0.line {
     stroke: #041937; }
@@ -41,6 +42,15 @@
 
 .d3-chart .color-2.area-line {
     fill: rgba(201, 145, 64, 0.3); }
+
+.d3-chart .color-3 .line, .d3-chart .color-3.line {
+    stroke: #488ef2; }
+
+.d3-chart .color-3 .series-label, .d3-chart .color-3 .data-point {
+    fill: #488ef2; }
+
+.d3-chart .color-3.area-line {
+    fill: rgba(255, 255, 255, 0.3); }
 
 .d3-chart .line {
     stroke-width: 2px;

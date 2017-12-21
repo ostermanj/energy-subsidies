@@ -139,7 +139,7 @@ export const Charts = (function(){
                 .data(this.data)
                 .enter().append('g')
                 .attr('class', () => {
-                    return 'each-series series-' + this.parent.seriesCount + ' color-' + this.parent.seriesCount++ % 3;
+                    return 'each-series series-' + this.parent.seriesCount + ' color-' + this.parent.seriesCount++ % 4;
                 });
 /*
             this.eachSeries.each((d,i,array) => {
@@ -338,8 +338,7 @@ export const Charts = (function(){
             if ( this.yMin < 0 ) {
                 this.yAxisGroup
                     .selectAll('.tick')
-                    .each(function(d,i,array) {
-                        console.log(d,i,array);
+                    .each(function(d,i) {
                         d3.select(this)
                             .classed('zero', d === 0 && i !== 0);
                     });
@@ -354,10 +353,14 @@ export const Charts = (function(){
             
         },
         addLabels(){
-            this.eachSeries.append('text')
+            this.labels = this.eachSeries
+                .append('g')
+                .attr('transform', (d) => `translate(${this.width + 5}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`)
+                .append('text')
                 .attr('class', 'series-label')
-                .html((d) => '<tspan x="0">' + this.parent.label(d.key).replace(/\\n/g,'</tspan><tspan x="0" dy="1.2em">') + '</tspan>')
-                .attr('transform', (d) => `translate(${this.width + 5}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`);
+                .html((d) => {
+                    return '<tspan x="0">' + this.parent.label(d.key).replace(/\\n/g,'</tspan><tspan x="0" dy="1.2em">') + '</tspan>';
+                });
         },
         addPoints(){
             

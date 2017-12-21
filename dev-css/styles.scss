@@ -18,6 +18,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
     .data-point {
         stroke-width: 2px;
         stroke: white;
+        cursor: pointer;
     }
     .color-0 {
         .line, &.line {
@@ -50,6 +51,17 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         }
         &.area-line {
             fill: rgba($gold, 0.3);
+        }
+    }
+    .color-3 {
+        .line, &.line {
+            stroke: lighten($blue, 50%);
+        }
+        .series-label, .data-point {
+            fill: lighten($blue, 50%);
+        }
+        &.area-line {
+            fill: lighten(rgba($gold, 0.3), 50%);
         }
     }
     & .line {
