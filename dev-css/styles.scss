@@ -90,6 +90,17 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
             }
 
         }
+        .y-axis {
+            .domain {
+                display:none;
+            }
+            .tick.zero {
+                text {
+                    font-weight: bold;
+                    fill: $blue;
+                }
+            }
+        }
     }
 }
 

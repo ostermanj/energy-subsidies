@@ -118,7 +118,7 @@ export const Charts = (function(){
         defaultMargins: {
             top:20,
             right:45,
-            bottom:15,
+            bottom:25,
             left:35
         },
               
@@ -307,22 +307,17 @@ export const Charts = (function(){
             }
         },
         addXAxis(){ // could be in Chart prototype ?
-            var yAxisPosition,
-                yAxisOffset,
+            var xAxisPosition,
+                xAxisOffset,
                 axisType;
 
-            if ( this.config.yAxisPosition === 'zero' ){
-                yAxisPosition = 0;
-                yAxisOffset = 0;
-                axisType = d3.axisBottom;
-            }
-            else if ( this.config.yAxisPosition === 'top' ){
-                yAxisPosition = this.yMax;
-                yAxisOffset = -this.marginTop;
+            if ( this.config.xAxisPosition === 'top' ){
+                xAxisPosition = this.yMax;
+                xAxisOffset = -this.marginTop;
                 axisType = d3.axisTop;
             } else {
-                yAxisPosition = this.yMin;
-                yAxisOffset = 0;
+                xAxisPosition = this.yMin;
+                xAxisOffset = this.marginBottom - 15;
                 axisType = d3.axisBottom;
             }
             var axis = axisType(this.xScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1);
@@ -330,7 +325,7 @@ export const Charts = (function(){
                 axis.tickValues(this.xValuesUnique.map(each => d3.timeParse(this.xTimeType)(each))); // TO DO: allow for other xAxis Adjustments
             }
             this.xAxisGroup
-                .attr('transform', 'translate(0,' + ( this.yScale(yAxisPosition) + yAxisOffset ) + ')') // not programatic placement of x-axis
+                .attr('transform', 'translate(0,' + ( this.yScale(xAxisPosition) + xAxisOffset ) + ')') // not programatic placement of x-axis
                 .attr('class', 'axis x-axis')
                 .call(axis);
         },
@@ -339,6 +334,17 @@ export const Charts = (function(){
             this.yAxisGroup
               .attr('class', () => 'axis y-axis ')
               .call(d3.axisLeft(this.yScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(5));
+
+            if ( this.yMin < 0 ) {
+                this.yAxisGroup
+                    .selectAll('.tick')
+                    .each(function(d,i,array) {
+                        console.log(d,i,array);
+                        d3.select(this)
+                            .classed('zero', d === 0 && i !== 0);
+                    });
+            }
+
 
             /* labels */
             this.eachSeries.append('text')
