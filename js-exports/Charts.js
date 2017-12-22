@@ -357,10 +357,46 @@ export const Charts = (function(){
                 .append('g')
                 .attr('transform', (d) => `translate(${this.width + 5}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`)
                 .append('text')
+                .attr('y', 0)
                 .attr('class', 'series-label')
                 .html((d) => {
                     return '<tspan x="0">' + this.parent.label(d.key).replace(/\\n/g,'</tspan><tspan x="0" dy="1.2em">') + '</tspan>';
                 });
+           
+            relax.call(this);
+           
+
+            function relax(){
+                var alpha = 0.5,
+                    spacing = 0,
+                    again = false;
+
+                this.labels.each((d,i,array1) => {
+                    var a = array1[i],
+                        $a = d3.select(a),
+                        yA = $a.attr('y'),
+                        aRange = d3.range(Math.round(a.getCTM().f) - spacing + parseInt(yA), Math.round(a.getCTM().f) + Math.round(a.getBBox().height) + 1 + spacing + parseInt(yA));
+
+                    this.labels.each(function(){
+                        var b = this,
+                        $b = d3.select(b),
+                        yB = $b.attr('y');
+                        if ( a === b ) {return;}
+                        var bLimits = [Math.round(b.getCTM().f) - spacing + parseInt(yB), Math.round(b.getCTM().f) + b.getBBox().height + spacing + parseInt(yB)];
+                        if ( (aRange[0] < bLimits[0] && aRange[aRange.length - 1] < bLimits[0]) || (aRange[0] > bLimits[1] && aRange[aRange.length - 1] > bLimits[1]) ){return;} // no collison
+                        var sign = bLimits[0] - aRange[aRange.length - 1] <= aRange[0] - bLimits[1] ? 1 : -1,
+                            adjust = sign * alpha;
+                        $b.attr('y', (+yB - adjust) );
+                        $a.attr('y', (+yA + adjust) );
+                        again = true; 
+                    });
+                    if ( i === array1.length - 1 && again === true ) {
+                        setTimeout(() => {
+                            relax.call(this);
+                        },20);
+                    }
+                });
+            }
         },
         addPoints(){
             
@@ -388,7 +424,6 @@ export const Charts = (function(){
                 .transition().duration(500)
                 .attr('opacity', 1);
 
-            
         },
         setTooltips(){
 
