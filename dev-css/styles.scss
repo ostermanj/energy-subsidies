@@ -75,10 +75,10 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
             width: 25px;
             height: 25px;
             position: absolute;
-            top: -3px;
+            bottom: -2px;
             text {
                 font-size: 0.8em;
-                transform: translate(4px,16px); 
+                /*transform: translate(4px,16px); */
             }
         }
         path {
@@ -88,10 +88,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         }
         text {
             font-family: $serif;
-            &.units, &.series-label {
-                font-size: 12px;
-                fill: $dark_gray;
-                &.has-tooltip, tspan.has-tooltip {
+             &.has-tooltip, tspan.has-tooltip {
                     
                     cursor: pointer;
                     
@@ -101,6 +98,10 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
                     font-weight: bold;
                     
                 }
+            &.units, &.series-label {
+                font-size: 12px;
+                fill: $dark_gray;
+               
             }
             &.series-0 {
                 fill: $blue;
