@@ -71,9 +71,12 @@ export const Charts = (function(){
                     return '<strong>' + heading + '</strong>';
                 });
         },
-        label(key){
+        label(key){ // TO DO: combine these into one method that returns object
             return this.dictionary.find(each => each.key === key).label;
         },
+        description(key){
+            return this.dictionary.find(each => each.key === key).description;
+        },  
         units(key){
             return this.dictionary.find(each => each.key === key).units;  
         },
@@ -116,8 +119,8 @@ export const Charts = (function(){
 
     LineChart.prototype = { // each LineChart is an svg that hold grouped series
         defaultMargins: {
-            top:20,
-            right:45,
+            top:25,
+            right:65,
             bottom:25,
             left:35
         },
@@ -355,19 +358,55 @@ export const Charts = (function(){
         addLabels(){
             this.labels = this.eachSeries
                 .append('g')
-                .attr('transform', (d) => `translate(${this.width + 5}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`)
+                .attr('transform', (d) => `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`)
                 .append('text')
                 .attr('y', 0)
                 .attr('class', 'series-label')
                 .html((d) => {
-                    return '<tspan x="0">' + this.parent.label(d.key).replace(/\\n/g,'</tspan><tspan x="0" dy="1.2em">') + '</tspan>';
+                    return '<tspan x="0">' + this.parent.label(d.key).replace(/\\n/g,'</tspan><tspan x="0.5em" dy="1.2em">') + '</tspan>';
                 });
-           
-            relax.call(this);
-           
 
-            function relax(){
-                var alpha = 0.5,
+            var labelTooltip = d3.tip()
+                .attr("class", "d3-tip label-tip")
+                .direction('n')
+                .offset([-8, 0]);
+                
+
+          function mouseover(d){
+                if ( window.openTooltip ) {
+                    window.openTooltip.hide();
+                }
+                labelTooltip.html(this.parent.description(d.key));
+                labelTooltip.show();
+                window.openTooltip = labelTooltip;
+            }
+
+            relax.call(this);
+          
+
+            this.labels.each((d, i, array) => {
+                if ( this.parent.description(d.key) !== '' ){
+                    d3.select(array[i])
+                        .classed('has-tooltip', true)
+                        .html(function(){
+                            return d3.select(this).html() + '<tspan dy="-0.2em" class="info-mark">&#9432;</tspan>'; 
+                        })
+                        .on('mouseover', (d,i,array) => {
+                            array[i].focus();
+                        })
+                        .on('focus', d => {
+                            mouseover.call(this,d);
+                        })
+                        .on('mouseout', (d,i,array) => {
+                            array[i].blur();
+                        })
+                        .on('blur', labelTooltip.hide)
+                        .call(labelTooltip);
+                }
+            });
+           
+            function relax(){ // HT http://jsfiddle.net/thudfactor/B2WBU/ adapted technique
+                var alpha = 1,
                     spacing = 0,
                     again = false;
 
@@ -383,7 +422,10 @@ export const Charts = (function(){
                         yB = $b.attr('y');
                         if ( a === b ) {return;}
                         var bLimits = [Math.round(b.getCTM().f) - spacing + parseInt(yB), Math.round(b.getCTM().f) + b.getBBox().height + spacing + parseInt(yB)];
-                        if ( (aRange[0] < bLimits[0] && aRange[aRange.length - 1] < bLimits[0]) || (aRange[0] > bLimits[1] && aRange[aRange.length - 1] > bLimits[1]) ){return;} // no collison
+                        if ( (aRange[0] < bLimits[0] && aRange[aRange.length - 1] < bLimits[0]) || (aRange[0] > bLimits[1] && aRange[aRange.length - 1] > bLimits[1]) ){
+                            //console.log('no collision', a, b);
+                            return;
+                        } // no collison
                         var sign = bLimits[0] - aRange[aRange.length - 1] <= aRange[0] - bLimits[1] ? 1 : -1,
                             adjust = sign * alpha;
                         $b.attr('y', (+yB - adjust) );
@@ -393,32 +435,49 @@ export const Charts = (function(){
                     if ( i === array1.length - 1 && again === true ) {
                         setTimeout(() => {
                             relax.call(this);
-                        },20);
+                        },200);
                     }
                 });
             }
         },
         addPoints(){
             
+            function mouseover(d,i,array){
+                if ( window.openTooltip ) {
+                    window.openTooltip.hide();
+                }
+                var klass = array[i].parentNode.classList.value.match(/color-\d/)[0]; // get the color class of the parent g
+                    this.tooltip.attr('class', this.tooltip.attr('class') + ' ' + klass);
+                    this.tooltip.html('<strong>' + this.parent.tipText(d.series) + '</strong> (' + d.year + ')<br />' + d[this.config.variableY] + ' ' + this.parent.units(d.series) );
+                    this.tooltip.show();
+                window.openTooltip = this.tooltip;
+            }
+            function mouseout(){
+                this.tooltip.attr('class', this.tooltip.attr('class').replace(/ color-\d/g, ''));
+                this.tooltip.html('');
+                this.tooltip.hide();
+            }
+
             this.points = this.eachSeries.selectAll('points')
                 .data(d => d.values)
                 .enter().append('circle')
+                .attr('tabindex',0)
                 .attr('opacity', 0)
                 .attr('class', 'data-point')
                 .attr('r', '4')
                 .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
                 .attr('cy', d => this.yScale(d[this.config.variableY]))
                 .on('mouseover', (d,i,array) => {
-                    
-                    var klass = array[i].parentNode.classList.value.match(/color-\d/)[0]; // get the color class of the parent g
-                    this.tooltip.attr('class', this.tooltip.attr('class') + ' ' + klass);
-                    this.tooltip.html('<strong>' + this.parent.tipText(d.series) + '</strong> (' + d.year + ')<br />' + d[this.config.variableY] + ' ' + this.parent.units(d.series) );
-                    this.tooltip.show();
+                    array[i].focus();
                 })
-                .on('mouseout', () => {
-                    this.tooltip.attr('class', this.tooltip.attr('class').replace(/ color-\d/g, ''));
-                    this.tooltip.html('');
-                    this.tooltip.hide();
+                .on('focus', (d,i,array) => {
+                    mouseover.call(this,d,i,array);
+                })
+                .on('mouseout', (d,i,array) => {
+                    array[i].blur();
+                })
+                .on('blur', () => {
+                    mouseout.call(this);
                 })
                 .call(this.tooltip)
                 .transition().duration(500)

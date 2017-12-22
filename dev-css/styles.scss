@@ -77,8 +77,17 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         text {
             font-family: $serif;
             &.units, &.series-label {
-                font-size: 11px;
+                font-size: 12px;
                 fill: $dark_gray;
+                &.has-tooltip {
+                    
+                    cursor: pointer;
+                    
+                }
+                .info-mark {
+                    font-size: 0.8em;
+                    font-weight: bold;
+                }
             }
             &.series-0 {
                 fill: $blue;
@@ -148,18 +157,21 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
 /* d3-tip css TO DO  add as import or separate file */
 
 .d3-tip {
-    padding: 10px;
+    padding: 7px;
     background: rgba(255,255,255,0.9);
     color: $dark_gray;
-    letter-spacing: 1px;
     opacity: 0;
     transition: opacity 0.5s linear;
     font-size: 75%;
     line-height: 120%;
     z-index: 9;
-    width:33%;
-    max-width: 200px;
-    border: 2px solid $dark_gray;
+    max-width: 180px;
+    border: 1px solid $a11y_gray;
+
+    &.label-tip {
+        border-radius: 10px;
+        padding: 4px 7px;
+    }
     
     &:after {
         box-sizing: border-box;

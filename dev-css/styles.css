@@ -41,8 +41,13 @@
   .d3-chart svg text {
     font-family: "Calluna W01", Georgia, "Times New Roman", "DejaVu Serif", serif; }
     .d3-chart svg text.units, .d3-chart svg text.series-label {
-      font-size: 11px;
+      font-size: 12px;
       fill: #58585b; }
+      .d3-chart svg text.units.has-tooltip, .d3-chart svg text.series-label.has-tooltip {
+        cursor: pointer; }
+      .d3-chart svg text.units .info-mark, .d3-chart svg text.series-label .info-mark {
+        font-size: 0.8em;
+        font-weight: bold; }
     .d3-chart svg text.series-0 {
       fill: #041937; }
     .d3-chart svg text.series-1 {
@@ -85,18 +90,19 @@
 
 /* d3-tip css TO DO  add as import or separate file */
 .d3-tip {
-  padding: 10px;
+  padding: 7px;
   background: rgba(255, 255, 255, 0.9);
   color: #58585b;
-  letter-spacing: 1px;
   opacity: 0;
   transition: opacity 0.5s linear;
   font-size: 75%;
   line-height: 120%;
   z-index: 9;
-  width: 33%;
-  max-width: 200px;
-  border: 2px solid #58585b; }
+  max-width: 180px;
+  border: 1px solid #767676; }
+  .d3-tip.label-tip {
+    border-radius: 10px;
+    padding: 4px 7px; }
   .d3-tip:after {
     box-sizing: border-box;
     display: inline;
