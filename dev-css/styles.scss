@@ -6,7 +6,9 @@ $green: #527E5A;
 $gold: #C99140;
 $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
 
-
+.relative {
+    position: relative;
+}
 .flex {
     display: flex;
     justify-content: flex-start;
@@ -69,6 +71,16 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         stroke: black;
     }
     svg {
+        &.heading-info {
+            width: 25px;
+            height: 25px;
+            position: absolute;
+            top: -3px;
+            text {
+                font-size: 0.8em;
+                transform: translate(4px,16px); 
+            }
+        }
         path {
             fill: none;
             
@@ -79,7 +91,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
             &.units, &.series-label {
                 font-size: 12px;
                 fill: $dark_gray;
-                &.has-tooltip {
+                &.has-tooltip, tspan.has-tooltip {
                     
                     cursor: pointer;
                     
@@ -87,6 +99,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
                 .info-mark {
                     font-size: 0.8em;
                     font-weight: bold;
+                    
                 }
             }
             &.series-0 {

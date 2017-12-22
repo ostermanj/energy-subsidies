@@ -1,3 +1,6 @@
+.relative {
+  position: relative; }
+
 .flex {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -56,6 +59,17 @@
     stroke-width: 2px;
     stroke: black; }
 
+.d3-chart svg.heading-info {
+    width: 25px;
+    height: 25px;
+    position: absolute;
+    top: -3px; }
+
+.d3-chart svg.heading-info text {
+      font-size: 0.8em;
+      -webkit-transform: translate(4px, 16px);
+              transform: translate(4px, 16px); }
+
 .d3-chart svg path {
     fill: none; }
 
@@ -66,7 +80,7 @@
       font-size: 12px;
       fill: #58585b; }
 
-.d3-chart svg text.units.has-tooltip, .d3-chart svg text.series-label.has-tooltip {
+.d3-chart svg text.units.has-tooltip, .d3-chart svg text.units tspan.has-tooltip, .d3-chart svg text.series-label.has-tooltip, .d3-chart svg text.series-label tspan.has-tooltip {
         cursor: pointer; }
 
 .d3-chart svg text.units .info-mark, .d3-chart svg text.series-label .info-mark {

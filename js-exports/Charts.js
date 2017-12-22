@@ -64,19 +64,58 @@ export const Charts = (function(){
         }, // end groupSeries()
         addHeading(input){
             
-            d3.select(this.container)
+            var heading = d3.select(this.container)
                 .append('p')
+                .attr('class','relative')
                 .html(() => {
                     var heading = typeof input === 'string' ? input : this.label(this.config.category);
                     return '<strong>' + heading + '</strong>';
                 });
+
+             var labelTooltip = d3.tip()
+                .attr("class", "d3-tip label-tip")
+                .direction('s')
+                .offset([4, 0])
+                .html(this.description(this.config.category));
+
+            function mouseover(){
+                if ( window.openTooltip ) {
+                    window.openTooltip.hide();
+                }
+                labelTooltip.show();
+                window.openTooltip = labelTooltip;
+            }
+
+            if ( this.description(this.config.category) !== undefined && this.description(this.config.category) !== '' ){
+                heading.html(heading.html() + '<svg class="inline heading-info"><text class="info-mark">&#9432;</text></svg>');
+
+                heading.select('.info-mark')
+                    .classed('has-tooltip', true)
+                    .on('mouseover', function(){
+                        this.focus();
+                    })
+                    .on('focus', () => {
+                        mouseover.call(this);
+                    })
+                    .on('mouseout', function(){
+                        this.blur();
+                    })
+                    .on('blur', labelTooltip.hide)
+                    .call(labelTooltip);
+
+            }
+
+
         },
         label(key){ // TO DO: combine these into one method that returns object
             return this.dictionary.find(each => each.key === key).label;
         },
         description(key){
             return this.dictionary.find(each => each.key === key).description;
-        },  
+        },
+        unitsDescription(key){
+            return this.dictionary.find(each => each.key === key).units_description;
+        },   
         units(key){
             return this.dictionary.find(each => each.key === key).units;  
         },
@@ -119,7 +158,7 @@ export const Charts = (function(){
 
     LineChart.prototype = { // each LineChart is an svg that hold grouped series
         defaultMargins: {
-            top:25,
+            top:27,
             right:65,
             bottom:25,
             left:35
@@ -349,10 +388,52 @@ export const Charts = (function(){
 
 
             /* labels */
-            this.eachSeries.append('text')
+            var unitsLabels = this.eachSeries.append('text')
               .attr('class', 'units')
-              .attr('transform', () => `translate(-${this.marginLeft},-${this.marginTop - 10})`)
-              .text((d,i) => i === 0 ? this.parent.units(d.key) : null);
+              .attr('transform', () => `translate(-${this.marginLeft},-${this.marginTop - 14})`)
+              .html((d,i) => i === 0 ? this.parent.units(d.key) : null);
+
+            var labelTooltip = d3.tip()
+                .attr("class", "d3-tip label-tip")
+                .direction('e')
+                .offset([-2, 4]);
+                
+
+            function mouseover(d){
+                if ( window.openTooltip ) {
+                    window.openTooltip.hide();
+                }
+                labelTooltip.html(this.parent.unitsDescription(d.key));
+                labelTooltip.show();
+                window.openTooltip = labelTooltip;
+            }
+
+            unitsLabels.each((d, i, array) => { // TO DO this is repetitive of addLabels()
+                if ( this.parent.unitsDescription(d.key) !== undefined && d3.select(array[i]).html() !== ''){
+                    console.log(this.parent.unitsDescription(d.key));
+                    var label = d3.select(array[i])
+                        
+                        .html(function(){
+                            return d3.select(this).html() + '<tspan dy="-0.2em" class="info-mark">&#9432;</tspan>'; 
+                        });
+
+                    label.select('.info-mark')
+                        .classed('has-tooltip', true)
+                        .on('mouseover', (d,i,array) => {
+                            array[i].focus();
+                        })
+                        .on('focus', d => {
+                            mouseover.call(this,d);
+                        })
+                        .on('mouseout', (d,i,array) => {
+                            array[i].blur();
+                        })
+                        .on('blur', labelTooltip.hide)
+                        .call(labelTooltip);   
+                }
+            });
+
+
             
         },
         addLabels(){
@@ -369,7 +450,7 @@ export const Charts = (function(){
             var labelTooltip = d3.tip()
                 .attr("class", "d3-tip label-tip")
                 .direction('n')
-                .offset([-8, 0]);
+                .offset([-4, 12]);
                 
 
           function mouseover(d){
@@ -385,12 +466,14 @@ export const Charts = (function(){
           
 
             this.labels.each((d, i, array) => {
-                if ( this.parent.description(d.key) !== '' ){
-                    d3.select(array[i])
-                        .classed('has-tooltip', true)
+                if ( this.parent.description(d.key) !== undefined && this.parent.description(d.key) !== ''){
+                    var labels = d3.select(array[i])
                         .html(function(){
                             return d3.select(this).html() + '<tspan dy="-0.2em" class="info-mark">&#9432;</tspan>'; 
-                        })
+                        });
+
+                    labels.select('.info-mark')
+                        .classed('has-tooltip', true)
                         .on('mouseover', (d,i,array) => {
                             array[i].focus();
                         })
