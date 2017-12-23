@@ -100,7 +100,8 @@
     stroke: #767676; }
 
 .d3-chart svg .axis text {
-    fill: #767676; }
+    fill: #767676;
+    font-size: 11px; }
 
 .d3-chart svg .axis.repeated path.domain {
     display: none; }

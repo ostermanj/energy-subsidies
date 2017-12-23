@@ -120,6 +120,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
             }
             text {
                 fill: $a11y_gray;
+                font-size: 11px;
             }
             &.repeated path.domain {
                 display:none;
