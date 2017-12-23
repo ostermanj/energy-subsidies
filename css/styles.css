@@ -78,9 +78,10 @@
 .d3-chart svg text.has-tooltip, .d3-chart svg text tspan.has-tooltip {
       cursor: pointer; }
 
-.d3-chart svg text .info-mark {
+.d3-chart svg text .info-mark, .d3-chart svg text.info-mark {
       font-size: 0.8em;
-      font-weight: bold; }
+      font-weight: bold;
+      font-family: Georgia,"Times New Roman","DejaVu Serif",serif; }
 
 .d3-chart svg text.units, .d3-chart svg text.series-label {
       font-size: 12px;

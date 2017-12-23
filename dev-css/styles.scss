@@ -93,9 +93,10 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
                     cursor: pointer;
                     
                 }
-                .info-mark {
+                .info-mark, &.info-mark {
                     font-size: 0.8em;
                     font-weight: bold;
+                    font-family: Georgia,"Times New Roman","DejaVu Serif",serif; 
                     
                 }
             &.units, &.series-label {
