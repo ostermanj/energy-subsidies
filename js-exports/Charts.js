@@ -1,4 +1,5 @@
 export const Charts = (function(){
+    /* globals D3Charts */
 
     var ChartDiv = function(container, parent){
         this.container = container;
@@ -143,17 +144,15 @@ export const Charts = (function(){
         this.yScaleType = this.config.yScaleType || 'linear';
         this.xTimeType = this.config.xTimeType || '%Y';
         this.scaleBy = this.config.scaleBy || 'series-group';
+        this.isFirstRender = true;
         this.setScales(); // //SHOULD BE IN CHART PROTOTYPE 
         this.setTooltips();
         this.addLines();
       //  this.addPoints();
         this.addXAxis();
         this.addYAxis();
-        if ( this.config.directLabel === true ){
-        //    this.addLabels();
-        } else {
-            // this.addLegends();
-        }
+        
+
                
     };
 
@@ -166,6 +165,7 @@ export const Charts = (function(){
         },
               
         init(chartDiv){ // //SHOULD BE IN CHART PROTOTYPE this is called once for each seriesGroup of each category. 
+            D3Charts.CollectAll.push(this);
             var container =  d3.select(chartDiv)
                 .append('svg')
                 .attr('width', this.width + this.marginRight + this.marginLeft )
@@ -178,8 +178,10 @@ export const Charts = (function(){
 
             this.yAxisGroup = this.svg.append('g');
 
-            this.eachSeries = this.svg.selectAll('each-series')
-                .data(this.data)
+            this.allSeries = this.svg.append('g');
+
+            this.eachSeries = this.allSeries.selectAll('each-series')
+                .data(this.data, d => d.key)
                 .enter().append('g')
                 .attr('class', () => {
                     return 'each-series series-' + this.parent.seriesCount + ' color-' + this.parent.seriesCount++ % 4;
@@ -193,6 +195,15 @@ export const Charts = (function(){
             }
 
             return container.node();
+        },
+        update(variableY = this.config.variableY){
+            this.config.variableY = variableY;
+            console.log(this.config.variableY, this.isFirstRender);
+
+            this.prepareStacking();
+            this.setScales();
+            this.addLines();
+
         },
         prepareStacking(){
             var forStacking = this.data.reduce((acc,cur,i) => {
@@ -317,13 +328,13 @@ export const Charts = (function(){
                 stackGroup    
                     .selectAll('stacked-area')
                     .data(this.stackData)
-                    .enter().append('path')
+                    .enter().append('path') // TO DO: add zero-line equivalent and logic for transition on update
                     .attr('class', (d,i) => 'area-line color-' + i) // TO DO not quite right that color shold be `i`
                                                                          // if you have more than one group of series, will repeat
                     .attr('d', d => area(d));
 
                 stackGroup
-                    .selectAll('stacked-line')
+                    .selectAll('stacked-line') // TO DO: add zero-line equivalent and logic for transition on update
                     .data(this.stackData)
                     .enter().append('path')
                     .attr('class', (d,i) => 'line color-' + i) 
@@ -331,22 +342,60 @@ export const Charts = (function(){
 
                 
             } else {
-                this.lines = this.eachSeries.append('path')
-                    .attr('class','line')
-                    .attr('d', (d) => {
-                        return zeroValueline(d.values);
-                    })
-                    .transition().duration(500).delay(150)
-                    .attr('d', (d) => {
-                        return valueline(d.values);
-                    })
-                    .on('end', (d,i,array) => {
-                        if ( i === array.length - 1 ){
-                            
-                            this.addPoints();
-                            this.addLabels();
-                        }
-                    });
+                if ( this.isFirstRender ){
+                    
+                    this.lines = this.eachSeries.append('path')
+                        .attr('class','line')
+                        .attr('d', (d) => {
+                            return zeroValueline(d.values);
+                        })
+                        .transition().duration(500).delay(150)
+                        .attr('d', (d) => {
+                            return valueline(d.values);
+                        })
+                        .on('end', (d,i,array) => {
+                            if ( i === array.length - 1 ){
+                                
+                                this.addPoints();
+                                this.addLabels();
+                            }
+                        });
+                } else {
+                    
+                    d3.selectAll(this.lines.nodes())
+                        .transition().duration(500)
+                        .attr('d', (d) => {
+                            return valueline(d.values);
+                        });
+
+                    d3.selectAll(this.points.nodes())
+                        .transition().duration(500)
+                        .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
+                        .attr('cy', d => {
+                            console.log(this.config.variableY);
+                            return this.yScale(d[this.config.variableY]);
+                        });
+
+
+                    d3.selectAll(this.labelGroups.nodes())
+                        .transition().duration(500)
+                        .attr('transform', (d) => `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`);
+
+                    d3.selectAll(this.labels.nodes())
+                        .transition().duration(500)
+                        .attr('y', 0)
+                        .on('end', (d,i,array) => {
+                            if (i === array.length - 1 ){
+                                this.relaxLabels();
+                            }
+                        });
+
+                    d3.selectAll(this.yAxisGroup.nodes())
+                        .transition().duration(500)
+                        .call(d3.axisLeft(this.yScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(5));
+
+
+                }
             }
         },
         addXAxis(){ // could be in Chart prototype ?
@@ -437,15 +486,6 @@ export const Charts = (function(){
             
         },
         addLabels(){
-            this.labels = this.eachSeries
-                .append('g')
-                .attr('transform', (d) => `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`)
-                .append('text')
-                .attr('y', 0)
-                .attr('class', 'series-label')
-                .html((d) => {
-                    return '<tspan x="0">' + this.parent.label(d.key).replace(/\\n/g,'</tspan><tspan x="0.5em" dy="1.2em">') + '</tspan>';
-                });
 
             var labelTooltip = d3.tip()
                 .attr("class", "d3-tip label-tip")
@@ -453,7 +493,7 @@ export const Charts = (function(){
                 .offset([-4, 12]);
                 
 
-          function mouseover(d){
+            function mouseover(d){
                 if ( window.openTooltip ) {
                     window.openTooltip.hide();
                 }
@@ -462,9 +502,18 @@ export const Charts = (function(){
                 window.openTooltip = labelTooltip;
             }
 
-            relax.call(this);
-          
+            this.labelGroups = this.eachSeries
+                .append('g');
 
+            this.labels = this.labelGroups
+                .attr('transform', (d) => `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`)
+                .append('text')
+                .attr('y', 0)
+                .attr('class', 'series-label')
+                .html((d) => {
+                    return '<tspan x="0">' + this.parent.label(d.key).replace(/\\n/g,'</tspan><tspan x="0.5em" dy="1.2em">') + '</tspan>';
+                });
+            
             this.labels.each((d, i, array) => {
                 if ( this.parent.description(d.key) !== undefined && this.parent.description(d.key) !== ''){
                     d3.select(array[i])
@@ -486,62 +535,70 @@ export const Charts = (function(){
                         .call(labelTooltip);
                 }
             });
+            this.isFirstRender = false;
+            
+
+            this.relaxLabels();
            
-            function relax(){ // HT http://jsfiddle.net/thudfactor/B2WBU/ adapted technique
-                var alpha = 1,
-                    spacing = 0,
-                    again = false;
+           
+        },
+        relaxLabels(){ // HT http://jsfiddle.net/thudfactor/B2WBU/ adapted technique
+            var alpha = 1,
+                spacing = 0,
+                again = false;
 
-                this.labels.each((d,i,array1) => {
-                    var a = array1[i],
-                        $a = d3.select(a),
-                        yA = $a.attr('y'),
-                        aRange = d3.range(Math.round(a.getCTM().f) - spacing + parseInt(yA), Math.round(a.getCTM().f) + Math.round(a.getBBox().height) + 1 + spacing + parseInt(yA));
+            this.labels.each((d,i,array1) => {
+                var a = array1[i],
+                    $a = d3.select(a),
+                    yA = $a.attr('y'),
+                    aRange = d3.range(Math.round(a.getCTM().f) - spacing + parseInt(yA), Math.round(a.getCTM().f) + Math.round(a.getBBox().height) + 1 + spacing + parseInt(yA));
 
-                    this.labels.each(function(){
-                        var b = this,
-                        $b = d3.select(b),
-                        yB = $b.attr('y');
-                        if ( a === b ) {return;}
-                        var bLimits = [Math.round(b.getCTM().f) - spacing + parseInt(yB), Math.round(b.getCTM().f) + b.getBBox().height + spacing + parseInt(yB)];
-                        if ( (aRange[0] < bLimits[0] && aRange[aRange.length - 1] < bLimits[0]) || (aRange[0] > bLimits[1] && aRange[aRange.length - 1] > bLimits[1]) ){
-                            //console.log('no collision', a, b);
-                            return;
-                        } // no collison
-                        var sign = bLimits[0] - aRange[aRange.length - 1] <= aRange[0] - bLimits[1] ? 1 : -1,
-                            adjust = sign * alpha;
-                        $b.attr('y', (+yB - adjust) );
-                        $a.attr('y', (+yA + adjust) );
-                        again = true; 
-                    });
-                    if ( i === array1.length - 1 && again === true ) {
-                        setTimeout(() => {
-                            relax.call(this);
-                        },200);
-                    }
+                this.labels.each(function(){
+                    var b = this,
+                    $b = d3.select(b),
+                    yB = $b.attr('y');
+                    if ( a === b ) {return;}
+                    var bLimits = [Math.round(b.getCTM().f) - spacing + parseInt(yB), Math.round(b.getCTM().f) + b.getBBox().height + spacing + parseInt(yB)];
+                    if ( (aRange[0] < bLimits[0] && aRange[aRange.length - 1] < bLimits[0]) || (aRange[0] > bLimits[1] && aRange[aRange.length - 1] > bLimits[1]) ){
+                        //console.log('no collision', a, b);
+                        return;
+                    } // no collison
+                    var sign = bLimits[0] - aRange[aRange.length - 1] <= aRange[0] - bLimits[1] ? 1 : -1,
+                        adjust = sign * alpha;
+                    $b.attr('y', (+yB - adjust) );
+                    $a.attr('y', (+yA + adjust) );
+                    again = true; 
                 });
-            }
+                if ( i === array1.length - 1 && again === true ) {
+                    setTimeout(() => {
+                        this.relaxLabels();
+                    },20);
+                }
+            });
         },
         addPoints(){
             
             function mouseover(d,i,array){
-                if ( window.openTooltip ) {
-                    window.openTooltip.hide();
-                }
-                var klass = array[i].parentNode.classList.value.match(/color-\d/)[0]; // get the color class of the parent g
-                    this.tooltip.attr('class', this.tooltip.attr('class') + ' ' + klass);
-                    this.tooltip.html('<strong>' + this.parent.tipText(d.series) + '</strong> (' + d.year + ')<br />' + d[this.config.variableY] + ' ' + this.parent.units(d.series) );
-                    this.tooltip.show();
-                window.openTooltip = this.tooltip;
+               
+                    if ( window.openTooltip ) {
+                        window.openTooltip.hide();
+                    }
+                   
+                    var klass = array[i].parentNode.classList.value.match(/color-\d/)[0]; // get the color class of the parent g
+                        this.tooltip.attr('class', this.tooltip.attr('class') + ' ' + klass);
+                        this.tooltip.html('<strong>' + this.parent.tipText(d.series) + '</strong> (' + d.year + ')<br />' + d[this.config.variableY] + ' ' + this.parent.units(d.series) );
+                        this.tooltip.show();
+                    window.openTooltip = this.tooltip;
+                
             }
             function mouseout(){
+                console.log('mouseout');
                 this.tooltip.attr('class', this.tooltip.attr('class').replace(/ color-\d/g, ''));
                 this.tooltip.html('');
                 this.tooltip.hide();
             }
-
             this.points = this.eachSeries.selectAll('points')
-                .data(d => d.values)
+                .data(d => d.values, d => d.key)
                 .enter().append('circle')
                 .attr('tabindex',0)
                 .attr('opacity', 0)
@@ -561,10 +618,27 @@ export const Charts = (function(){
                 .on('blur', () => {
                     mouseout.call(this);
                 })
+                .on('click', this.bringToTop)
+                .on('keyup', (d,i,array) => {
+                    console.log(d3.event);
+                    if (d3.event.keyCode === 13 ){
+                        
+                        this.bringToTop.call(array[i]);
+                    }
+                })
                 .call(this.tooltip)
                 .transition().duration(500)
                 .attr('opacity', 1);
+            
 
+        },
+        bringToTop(){
+            console.log(this.parentNode !== this.parentNode.parentNode.lastChild);
+            if ( this.parentNode !== this.parentNode.parentNode.lastChild ){
+                console.log('click', this);
+                d3.select(this.parentNode).moveToFront();
+                this.focus();
+            }
         },
         setTooltips(){
 

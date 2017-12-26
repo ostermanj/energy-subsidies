@@ -1,5 +1,5 @@
 export const Helpers = (function(){
-    /* globals DOMStringMap */
+    /* globals DOMStringMap, d3 */
     String.prototype.cleanString = function() { // lowercase and remove punctuation and replace spaces with hyphens; delete punctuation
         return this.replace(/[ \\\/]/g,'-').replace(/['"”’“‘,\.!\?;\(\)&]/g,'').toLowerCase();
     };
@@ -21,5 +21,19 @@ export const Helpers = (function(){
             }
         }
         return newObj;
+    };
+
+    d3.selection.prototype.moveToFront = function(){
+        return this.each(function(){
+            this.parentNode.appendChild(this);
+          });
+    };
+    d3.selection.prototype.moveToBack = function(){ 
+        return this.each(function(){
+            var firstChild = this.parentNode.firstChild;
+            if ( firstChild ) {
+                this.parentNode.insertBefore(this, firstChild);
+            }
+        });
     };
 })();

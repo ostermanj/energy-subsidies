@@ -160,6 +160,13 @@ var D3Charts = (function(){
                 groupCollection.push(new D3ChartGroup(groupDivs[i], i));
             }
             
+        },
+        CollectAll:[],
+        UpdateAll(variableY){
+            console.log(this.CollectAll);
+            this.CollectAll.forEach(each => {
+                each.update(variableY);
+            });
         }
     };
 }()); // end var D3Charts IIFE
