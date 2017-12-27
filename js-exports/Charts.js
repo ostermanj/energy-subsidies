@@ -403,9 +403,6 @@ export const Charts = (function(){
                                     });
                             },50);
                         });
-                        
-                  
-
                 }
             }
         },
@@ -597,7 +594,21 @@ export const Charts = (function(){
                    
                     var klass = array[i].parentNode.classList.value.match(/color-\d/)[0]; // get the color class of the parent g
                         this.tooltip.attr('class', this.tooltip.attr('class') + ' ' + klass);
-                        this.tooltip.html('<strong>' + this.parent.tipText(d.series) + '</strong> (' + d.year + ')<br />' + d[this.config.variableY] + ' ' + this.parent.units(d.series) );
+                        var prefix = '';
+                        var suffix = '';
+                        if ( this.parent.units(d.series) && this.parent.units(d.series)[0] === '$' ){
+                            prefix = '$'; // TO DO:  handle other prefixes
+                        }
+                        var html = '<strong>' + this.parent.tipText(d.series) + '</strong> (' + d.year + ')<br />' + prefix + d3.format(',')(d[this.config.variableY]);
+                        if ( this.parent.units(d.series) && this.parent.units(d.series) !== ''){
+                            suffix = this.parent.units(d.series).replace('$','').replace(/s$/,'');
+                            html += ' ' + suffix;
+                        }
+                        var cum = this.config.variableY.replace('_value','_cum');
+                        if ( d[cum] !== '' ){
+                            html += '<br />(' + prefix + d3.format(',')(d[cum]) + suffix + ' cumulative)';
+                        }
+                        this.tooltip.html(html);
                         this.tooltip.show();
                     window.openTooltip = this.tooltip;
                 

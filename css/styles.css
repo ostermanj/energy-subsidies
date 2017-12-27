@@ -161,6 +161,12 @@
 .d3-tip.color-2:after {
     color: #C99140; }
 
+.d3-tip.color-3 {
+  border-color: #488ef2; }
+
+.d3-tip.color-3:after {
+    color: #488ef2; }
+
 /* d3-tip css TO DO  add as import or separate file */
 
 .d3-tip {
@@ -173,7 +179,7 @@
   line-height: 120%;
   z-index: 9;
   max-width: 180px;
-  border: 1px solid #767676; }
+  border: 2px solid #767676; }
 
 .d3-tip.label-tip {
     border-radius: 10px;

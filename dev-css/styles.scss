@@ -186,7 +186,12 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         color: $gold;
     }
 }
-
+.d3-tip.color-3 {
+    border-color: lighten($blue, 50%);;
+    &:after {
+        color: lighten($blue, 50%);
+    }
+}
 /* d3-tip css TO DO  add as import or separate file */
 
 .d3-tip {
@@ -199,7 +204,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
     line-height: 120%;
     z-index: 9;
     max-width: 180px;
-    border: 1px solid $a11y_gray;
+    border: 2px solid $a11y_gray;
 
     &.label-tip {
         border-radius: 10px;
