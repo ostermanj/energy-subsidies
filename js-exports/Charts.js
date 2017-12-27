@@ -392,8 +392,19 @@ export const Charts = (function(){
 
                     d3.selectAll(this.yAxisGroup.nodes())
                         .transition().duration(500)
-                        .call(d3.axisLeft(this.yScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(5));
-
+                        .call(d3.axisLeft(this.yScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(5))
+                        .on('end',(d,i,array) => {
+                            setTimeout(() => {
+                                d3.select(array[i])
+                                    .selectAll('.tick')
+                                    .each((d,i,array) => {
+                                        d3.select(array[i])
+                                            .classed('zero', ( d === 0 && i !== 0 && this.yMin < 0 ));
+                                    });
+                            },50);
+                        });
+                        
+                  
 
                 }
             }
@@ -427,14 +438,14 @@ export const Charts = (function(){
               .attr('class', () => 'axis y-axis ')
               .call(d3.axisLeft(this.yScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(5));
 
-            if ( this.yMin < 0 ) {
-                this.yAxisGroup
-                    .selectAll('.tick')
-                    .each(function(d,i) {
-                        d3.select(this)
-                            .classed('zero', d === 0 && i !== 0);
-                    });
-            }
+            this.yAxisGroup
+                .selectAll('.tick')
+                .each((d,i,array) => {
+                    console.log(array[i]);
+                    d3.select(array[i])
+                        .classed('zero', ( d === 0 && i !== 0 && this.yMin < 0 ));
+                });
+            
 
 
             /* labels */
