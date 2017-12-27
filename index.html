@@ -9,8 +9,32 @@
     <link rel="stylesheet" type="text/css" href="dev-css/styles.css" />
 </head>
 <body style="max-width: 728px;margin: 0 auto;">
-    
+    <p><strong>Settings</strong></p>
+    <form id="forms">
+        <div>
+            <input onchange="changeHandler()" id="profit" type="radio" name="type" value="profit" checked />
+            <label for="profit">Profit guarantee</label>
+            <input onchange="changeHandler()" id="cost" type="radio" name="type" value="cost" />
+            <label for="profit">Costs only</label>
+        </div>
 
+        <div>
+            <input onchange="changeHandler()" id="both" type="radio" name="target" value="both" checked />
+            <label for="both">Coal and nuclear</label>
+            <input onchange="changeHandler()" id="nuclear" type="radio" name="target" value="nuclear" />
+            <label for="nuclear">Nuclear only</label>
+            <input onchange="changeHandler()" id="coal" type="radio" name="target" value="coal" />
+            <label for="coal">Coal only</label>
+        </div>
+
+        <div>
+            <input onchange="changeHandler()" id="twenty-five" type="radio" name="length" value="25" checked />
+            <label for="twenty-five">25 years</label>
+            <input onchange="changeHandler()" id="ten" type="radio" name="length" value="10" />
+            <label for="ten">10 years</label>
+        </div>
+    </form>
+    
     <div class="d3-group" data-sheet-id="1_G9HsJbxRBd7fWTF51Xr8lpxGxxImVcc-rTIaQbEeyA" data-nest-by='["category","series"]' data-data-tab="Sheet1" data-dictionary-tab="dictionary" data-variable-y="pb25l_value" data-variable-x="year" data-type="line" data-svg-width="320" data-direct-label="true">
         <p>
             Lorem ipsum dolor sit amet, consectetur adipisicing elit. Placeat commodi vero natus sed exercitationem beatae nam incidunt suscipit enim, repellat dolore dignissimos veritatis odit earum itaque! Debitis enim dolore magni.
@@ -38,6 +62,51 @@
     </div>
     <script type="text/javascript">
         D3Charts.Init();
+        
+            var form = document.querySelector('#forms');
+            form.querySelectorAll('input').forEach(each => {
+                each.onchange = function(){
+                    var forms = document.querySelector('#forms');
+                    var inputs = forms.querySelectorAll('input');
+                    var values = [];
+                    var variableY;
+                    for (let i = 0; i < inputs.length; i++){
+                        if ( inputs[i].checked ){
+                            values.push(inputs[i].value);
+                        }
+                    }
+                    switch (values.join('-')){
+                        case 'profit-both-25':
+                            variableY = 'pb25l_value';
+                            break;
+                        case 'profit-both-10':
+                            variableY = 'pb10l_value';
+                            break;
+                        case 'profit-coal-10':
+                            variableY = 'pc10l_value';
+                            break;
+                        case 'profit-nuclear-10':
+                            variableY = 'pn10l_value';
+                            break;
+                        case 'cost-both-25':
+                            variableY = 'cb25l_value';
+                            break;
+                        case 'cost-both-10':
+                            variableY = 'cb10l_value';
+                            break;
+                        case 'cost-coal-10':
+                            variableY = 'cc10l_value';
+                            break;
+                        case 'cost-nuclear-10':
+                            variableY = 'cn10l_value';
+                            break;
+
+                    }
+                    D3Charts.UpdateAll(variableY);
+
+                }
+            });
+        
     </script>  
 </body>
 </html>
