@@ -62,9 +62,10 @@
     </div>
     <script type="text/javascript">
         D3Charts.Init();
+            var _this = this;
             var userSelectedTen = false;
             var form = document.querySelector('#forms');
-            form.querySelectorAll('input').forEach(each => {
+            form.querySelectorAll('input').forEach(function(each){
                 each.onchange = function(){
                     if ( this.value === '10' ){
                         userSelectedTen = true;
