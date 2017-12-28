@@ -90,7 +90,7 @@ export const Charts = (function(){
             }
 
             if ( this.description(this.config.category) !== undefined && this.description(this.config.category) !== '' ){
-                heading.html(heading.html() + '<svg class="inline heading-info"><text x="4" y="16" class="info-mark">&#9432;</text></svg>');
+                heading.html(heading.html() + '<svg class="inline heading-info"><text x="4" y="12" class="info-mark">?</text></svg>');
 
                 heading.select('.info-mark')
                     .attr('tabindex',0)
@@ -469,7 +469,7 @@ export const Charts = (function(){
                     d3.select(array[i])
                         
                         .html(function(){
-                            return d3.select(this).html() + '<tspan dy="-0.2em" class="info-mark">&#9432;</tspan>'; 
+                            return d3.select(this).html() + '<tspan dy="-0.4em" dx="0.2em" class="info-mark">?</tspan>'; 
                         })
                         .attr('tabindex',0)
                         .classed('has-tooltip', true)
@@ -525,7 +525,7 @@ export const Charts = (function(){
                 if ( this.parent.description(d.key) !== undefined && this.parent.description(d.key) !== ''){
                     d3.select(array[i])
                         .html(function(){
-                            return d3.select(this).html() + '<tspan dy="-0.2em" class="info-mark">&#9432;</tspan>'; 
+                            return d3.select(this).html() + '<tspan dy="-0.4em" dx="0.2em" class="info-mark">?</tspan>'; 
                         })
                         .attr('tabindex',0) 
                         .classed('has-tooltip', true)

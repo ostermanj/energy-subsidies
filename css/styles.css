@@ -59,6 +59,9 @@
     stroke-width: 2px;
     stroke: black; }
 
+.d3-chart svg a, .d3-chart svg a:visited, .d3-chart svg a:active {
+    text-decoration: none; }
+
 .d3-chart svg.heading-info {
     width: 25px;
     height: 25px;
@@ -81,7 +84,7 @@
 .d3-chart svg text .info-mark, .d3-chart svg text.info-mark {
       font-size: 0.8em;
       font-weight: bold;
-      font-family: Georgia,"Times New Roman","DejaVu Serif",serif; }
+      fill: #767676; }
 
 .d3-chart svg text.units, .d3-chart svg text.series-label {
       font-size: 12px;
