@@ -1,4 +1,37 @@
 /**
+ * SVG focus 
+ * Copyright(c) 2017, John Osterman
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
+ * associated documentation files (the "Software"), to deal in the Software without restriction, including 
+ * without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+ * copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the 
+ * following conditions:
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT 
+ * LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO 
+ * EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+ // IE/Edge (perhaps others) does not allow programmatic focusing of SVG Elements (via `focus()`). Same for `blur()`.
+
+ export const SVGFocus = (function(){
+    if ( 'focus' in SVGElement.prototype === false ) {
+      SVGElement.prototype.focus = HTMLElement.prototype.focus;
+    }
+    if ( 'blur' in SVGElement.prototype === false ) {
+      SVGElement.prototype.blur = HTMLElement.prototype.blur;
+    }
+ })();
+
+
+
+
+/**
  * innerHTML property for SVGElement
  * Copyright(c) 2010, Jeff Schiller
  *
@@ -10,6 +43,11 @@
  *
  * I haven't decided on the best name for this property - thus the duplication.
  */
+// edited by John Osterman to declare the variable `sXML`, which was referenced without being declared
+// which failed silently in implicit strict mode of an export
+
+// most browsers allow setting innerHTML of svg elements but IE does not (not an HTML element)
+// this polyfill provides that. necessary for d3 method `.html()` on svg elements
 
 export const SVGInnerHTML = (function() {
   var serializeXML = function(node, output) {

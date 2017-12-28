@@ -90,26 +90,26 @@ export const Charts = (function(){
             }
 
             if ( this.description(this.config.category) !== undefined && this.description(this.config.category) !== '' ){
-                heading.html(heading.html() + '<svg class="inline heading-info"><text x="4" y="12" class="info-mark">?</text></svg>');
+                heading.html(heading.html() + '<svg focusable="false" class="inline heading-info"><a focusable="true" tabindex="0" xlink:href="#"><text x="4" y="12" class="info-mark">?</text></a></svg>');
 
-                heading.select('.info-mark')
-                    .attr('tabindex',0)
+                heading.select('.heading-info a')
                     .classed('has-tooltip', true)
                     .on('mouseover', function(){
                         this.focus();
                     })
-                    .on('focus', () => {
+                    .on('focus', () => {  
                         mouseover.call(this);
                     })
                     .on('mouseout', function(){
                         this.blur();
+                        //this.setAttribute('disabled','true');
                     })
                     .on('blur', labelTooltip.hide)
+                    .on('click', () => {
+                        d3.event.preventDefault();
+                    })
                     .call(labelTooltip);
-
             }
-
-
         },
         label(key){ // TO DO: combine these into one method that returns object
             return this.dictionary.find(each => each.key === key).label;
@@ -170,6 +170,7 @@ export const Charts = (function(){
             D3Charts.CollectAll.push(this);
             var container =  d3.select(chartDiv)
                 .append('svg')
+                .attr('focusable', false)
                 .attr('width', this.width + this.marginRight + this.marginLeft )
                 .attr('height', this.height  + this.marginTop + this.marginBottom );
 
@@ -444,10 +445,18 @@ export const Charts = (function(){
 
 
             /* labels */
-            var unitsLabels = this.eachSeries.append('text')
-              .attr('class', 'units')
-              .attr('transform', () => `translate(-${this.marginLeft -5 },-${this.marginTop - 14})`)
-              .html((d,i) => i === 0 ? this.parent.units(d.key) : null);
+            var unitsLabels = this.eachSeries
+                .append('a')
+                .attr('xlink:href', '#')
+                .attr('tabindex', -1)
+                .attr('focusable', false)
+                .on('click', () => {
+                    d3.event.preventDefault();
+                })
+                .append('text')
+                .attr('class', 'units')
+                .attr('transform', () => `translate(-${this.marginLeft -5 },-${this.marginTop - 14})`)
+                .html((d,i) => i === 0 ? this.parent.units(d.key) : null);
 
             var labelTooltip = d3.tip()
                 .attr("class", "d3-tip label-tip")
@@ -466,12 +475,9 @@ export const Charts = (function(){
 
             unitsLabels.each((d, i, array) => { // TO DO this is repetitive of addLabels()
                 if ( this.parent.unitsDescription(d.key) !== undefined && d3.select(array[i]).html() !== ''){
-                    d3.select(array[i])
-                        
-                        .html(function(){
-                            return d3.select(this).html() + '<tspan dy="-0.4em" dx="0.2em" class="info-mark">?</tspan>'; 
-                        })
+                    d3.select(array[i].parentNode)
                         .attr('tabindex',0)
+                        .attr('focusable',true)
                         .classed('has-tooltip', true)
                         .on('mouseover', (d,i,array) => {
                             array[i].focus();
@@ -484,6 +490,13 @@ export const Charts = (function(){
                         })
                         .on('blur', labelTooltip.hide)
                         .call(labelTooltip);   
+                        
+                    d3.select(array[i])
+                        
+                        .html(function(){
+                            return d3.select(this).html() + '<tspan dy="-0.4em" dx="0.2em" class="info-mark">?</tspan>'; 
+                        });
+                        
                 }
             });
 
@@ -514,8 +527,13 @@ export const Charts = (function(){
                 .attr('transform', (d) => `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`)
                 .append('a')
                 .attr('xlink:href','#')
+                .attr('tabindex',-1)
+                .attr('focusable',false)
                 .attr('y', 0)
-                .append('text')
+                .on('click', () => {
+                    d3.event.preventDefault();
+                })
+                .append('text') 
                 .attr('class', 'series-label')
                 .html((d) => {
                     return '<tspan x="0">' + this.parent.label(d.key).replace(/\\n/g,'</tspan><tspan x="0.5em" dy="1.2em">') + '</tspan>';
@@ -523,11 +541,9 @@ export const Charts = (function(){
             
             this.labels.each((d, i, array) => {
                 if ( this.parent.description(d.key) !== undefined && this.parent.description(d.key) !== ''){
-                    d3.select(array[i])
-                        .html(function(){
-                            return d3.select(this).html() + '<tspan dy="-0.4em" dx="0.2em" class="info-mark">?</tspan>'; 
-                        })
-                        .attr('tabindex',0) 
+                    d3.select(array[i].parentNode)
+                        .attr('tabindex',0)
+                        .attr('focusable',true)
                         .classed('has-tooltip', true)
                         .on('mouseover', (d,i,array) => {
                             array[i].focus();
@@ -540,6 +556,11 @@ export const Charts = (function(){
                         })
                         .on('blur', labelTooltip.hide)
                         .call(labelTooltip);
+                        
+                    d3.select(array[i])
+                        .html(function(){
+                            return d3.select(this).html() + '<tspan dy="-0.4em" dx="0.2em" class="info-mark">?</tspan>'; 
+                        });
                 }
             });
             this.isFirstRender = false;
@@ -590,8 +611,8 @@ export const Charts = (function(){
                     if ( window.openTooltip ) {
                         window.openTooltip.hide();
                     }
-                   
-                    var klass = array[i].parentNode.classList.value.match(/color-\d/)[0]; // get the color class of the parent g
+                   console.log(d3.select(array[i].parentNode).attr('class'));
+                    var klass = d3.select(array[i].parentNode).attr('class').match(/color-\d/)[0]; // get the color class of the parent g
                         this.tooltip.attr('class', this.tooltip.attr('class') + ' ' + klass);
                         var prefix = '';
                         var suffix = '';
@@ -622,12 +643,14 @@ export const Charts = (function(){
                 .data(d => d.values, d => d.key)
                 .enter().append('circle')
                 .attr('tabindex',0)
+                .attr('focusable', true)
                 .attr('opacity', 0)
                 .attr('class', 'data-point')
                 .attr('r', '4')
                 .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
                 .attr('cy', d => this.yScale(d[this.config.variableY]))
                 .on('mouseover', (d,i,array) => {
+                    console.log(array[i]);
                     array[i].focus();
                 })
                 .on('focus', (d,i,array) => {
