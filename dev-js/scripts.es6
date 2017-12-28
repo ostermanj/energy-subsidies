@@ -1,18 +1,18 @@
- /* exported D3Charts, Helpers, d3Tip */ // let's jshint know that D3Charts can be "defined but not used" in this file
- /* polyfills needed: Promise, Array.isArray, Array.find, Array.filter
+ /* exported D3Charts, Helpers, d3Tip, reflect, arrayFind, SVGInnerHTML */ // let's jshint know that D3Charts can be "defined but not used" in this file
+ /* polyfills needed: Promise, Array.isArray, Array.find, Array.filter, Reflect, Object.ownPropertyDescriptors
 
  */
+import { reflect, arrayFind, SVGInnerHTML } from '../js-vendor/polyfills';
 import { Helpers } from '../js-exports/Helpers';
 import { Charts } from '../js-exports/Charts';
 import { d3Tip } from '../js-vendor/d3-tip';
 
 var D3Charts = (function(){
 
-"use strict"; 
+"use strict";  
      
     var groupCollection = [];
     var D3ChartGroup = function(container, index){
-        
         this.container = container;
         this.index = index;
         this.config = container.dataset.convert();
@@ -159,6 +159,7 @@ var D3Charts = (function(){
             for ( let i = 0; i < groupDivs.length; i++ ){
                 groupCollection.push(new D3ChartGroup(groupDivs[i], i));
             }
+            console.log(groupCollection);
             
         },
         CollectAll:[],

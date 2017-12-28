@@ -36,7 +36,7 @@ module.exports = function(grunt){
               unused: true
             },
             files: {
-                src: ['dev-js/index.es6','js-exports/*.js']
+                src: ['dev-js/scripts.es6','js-exports/*.js']
             }
 
         },
@@ -44,7 +44,7 @@ module.exports = function(grunt){
             dist: {
                 files: {
                     // destination for transpiled js : source js
-                    'dev-js/index.js': 'dev-js/index.es6'
+                    'dev-js/scripts.js': 'dev-js/scripts.es6'
                 },
                 options: {
                     transform: [['babelify', { presets: "env" }]],

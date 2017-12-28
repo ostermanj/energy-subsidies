@@ -1,4 +1,4 @@
-export const Charts = (function(){
+export const Charts = (function(){    
     /* globals D3Charts */
 
     var ChartDiv = function(container, parent){
@@ -6,6 +6,8 @@ export const Charts = (function(){
         this.parent = parent;
         this.children = [];
         this.seriesCount = 0;
+        var configObj = container.dataset.convert();
+        console.log(configObj);
         this.config = Object.create( parent.config, Object.getOwnPropertyDescriptors( container.dataset.convert() ) );
             // line above creates a config object from the HTML dataset for the chartDiv container
             // that inherits from the parents config object. any configs not specified for the chartDiv (an own property)
@@ -23,17 +25,17 @@ export const Charts = (function(){
             console.log(`Invalid instruction from HTML for which categories to include 
                     (var seriesInstruct). Fallback to all.`);
         }
-        this.seriesGroups = this.groupSeries();
+        this.seriesGroups = this.groupSeries();  
         this.dictionary = this.parent.dictionary;
         if ( this.config.heading !== false ){
             this.addHeading(this.config.heading);
         }
         this.createCharts();
+      };
 
-    };
-    
     ChartDiv.prototype = {
-        chartTypes: {
+
+        chartTypes: { 
             line:   'LineChart',
             column: 'ColumnChart',
             bar:    'BarChart' // so on . . .
@@ -198,8 +200,6 @@ export const Charts = (function(){
         },
         update(variableY = this.config.variableY){
             this.config.variableY = variableY;
-            console.log(this.config.variableY, this.isFirstRender);
-
             this.prepareStacking();
             this.setScales();
             this.addLines();
@@ -372,7 +372,6 @@ export const Charts = (function(){
                         .transition().duration(500)
                         .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
                         .attr('cy', d => {
-                            console.log(this.config.variableY);
                             return this.yScale(d[this.config.variableY]);
                         });
 
@@ -438,7 +437,6 @@ export const Charts = (function(){
             this.yAxisGroup
                 .selectAll('.tick')
                 .each((d,i,array) => {
-                    console.log(array[i]);
                     d3.select(array[i])
                         .classed('zero', ( d === 0 && i !== 0 && this.yMin < 0 ));
                 });
@@ -468,7 +466,6 @@ export const Charts = (function(){
 
             unitsLabels.each((d, i, array) => { // TO DO this is repetitive of addLabels()
                 if ( this.parent.unitsDescription(d.key) !== undefined && d3.select(array[i]).html() !== ''){
-                    console.log(this.parent.unitsDescription(d.key));
                     d3.select(array[i])
                         
                         .html(function(){
@@ -515,8 +512,10 @@ export const Charts = (function(){
 
             this.labels = this.labelGroups
                 .attr('transform', (d) => `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`)
-                .append('text')
+                .append('a')
+                .attr('xlink:href','#')
                 .attr('y', 0)
+                .append('text')
                 .attr('class', 'series-label')
                 .html((d) => {
                     return '<tspan x="0">' + this.parent.label(d.key).replace(/\\n/g,'</tspan><tspan x="0.5em" dy="1.2em">') + '</tspan>';
