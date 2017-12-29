@@ -145,7 +145,7 @@ export const Charts = (function(){
         this.xScaleType = this.config.xScaleType || 'time';
         this.yScaleType = this.config.yScaleType || 'linear';
         this.xTimeType = this.config.xTimeType || '%Y';
-        this.scaleBy = this.config.scaleBy || 'series-group';
+        this.scaleBy = this.config.scaleBy || this.config.variableY;
         this.isFirstRender = true;
         this.setScales(); // //SHOULD BE IN CHART PROTOTYPE 
         this.setTooltips();
@@ -241,15 +241,18 @@ export const Charts = (function(){
                 // TO DO: add all scale types.
             };
             var xMaxes = [], xMins = [], yMaxes = [], yMins = [];
-            if ( this.scaleBy === 'series-group' ){
-                this.data.forEach(each => {
-                    
-                    xMaxes.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableX].max);
-                    xMins.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableX].min);
-                    yMaxes.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableY].max);
-                    yMins.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableY].min);
+
+            var yVariables = Array.isArray(this.scaleBy) ? this.scaleBy : Array.isArray(this.config.variableY) ? this.config.variableY : [this.config.variableY];
+
+            this.data.forEach(each => {
+                xMaxes.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableX].max);
+                xMins.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableX].min);
+                yVariables.forEach(yVar => {
+                    yMaxes.push(this.parent.parent.summaries[1][this.config.category][each.key][yVar].max);
+                    yMins.push(this.parent.parent.summaries[1][this.config.category][each.key][yVar].min);
                 });
-            }
+            });
+
             this.xMax = d3.max(xMaxes);
             this.xMin = d3.min(xMins);
             this.yMax = d3.max(yMaxes);
