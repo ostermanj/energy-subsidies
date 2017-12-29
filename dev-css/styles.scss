@@ -155,12 +155,12 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         width: 33%;
         flex-grow: 1;
         flex-shrink: 1;
-        min-width: 150px;
         input {
             top: 0;
         }
         label {
             margin-top: 0;
+            padding-left: 1.6em;
         }
     }
 }
@@ -234,7 +234,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         text-align: center;
     }
     &.e:after {
-        content: "\25C0";
+        content: "\25C0 \FE0E";
         margin: -4px 0 0;
         top: 50%;
         left: -8px;
@@ -247,7 +247,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         text-align: center;
     }
     &.w:after {
-        content: "\25B6";
+        content: "\25B6 \FE0E";
         margin: -4px 0 0 -1px;
         top: 50%;
         left: 100%;

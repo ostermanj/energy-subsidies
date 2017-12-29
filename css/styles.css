@@ -134,14 +134,14 @@
         -ms-flex-positive: 1;
             flex-grow: 1;
     -ms-flex-negative: 1;
-        flex-shrink: 1;
-    min-width: 150px; }
+        flex-shrink: 1; }
 
 #forms > div input {
       top: 0; }
 
 #forms > div label {
-      margin-top: 0; }
+      margin-top: 0;
+      padding-left: 1.6em; }
 
 .x-axis .tick:first-of-type {
   display: none; }
@@ -209,7 +209,7 @@
     text-align: center; }
 
 .d3-tip.e:after {
-    content: "\25C0";
+    content: "\25C0 \FE0E";
     margin: -4px 0 0;
     top: 50%;
     left: -8px; }
@@ -222,7 +222,7 @@
     text-align: center; }
 
 .d3-tip.w:after {
-    content: "\25B6";
+    content: "\25B6 \FE0E";
     margin: -4px 0 0 -1px;
     top: 50%;
     left: 100%; }
