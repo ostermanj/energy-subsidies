@@ -18,8 +18,8 @@ var D3Charts = (function(){
         this.config = container.dataset.convert();
         
         this.dataPromises = this.returnDataPromises(container);
-        this.children = [];
-        
+        this.children = []; 
+        this.collectAll = [];
         //this.controller.initController(container, this.model, this.view);
         this.dataPromises.then(() => {
             this.initializeCharts(container);
@@ -162,10 +162,15 @@ var D3Charts = (function(){
             console.log(groupCollection);
             
         },
-        CollectAll:[],
+        collectAll:[],
         UpdateAll(variableY){
-            console.log(this.CollectAll);
-            this.CollectAll.forEach(each => {
+            console.log(this.collectAll);
+            this.collectAll.forEach(each => {
+                each.update(variableY);
+            });
+        },
+        UpdateGroup(index,variableY){
+            groupCollection[index].collectAll.forEach(each => {
                 each.update(variableY);
             });
         }

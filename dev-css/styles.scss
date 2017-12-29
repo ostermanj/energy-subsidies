@@ -15,12 +15,46 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
     flex-wrap: wrap;
 }
 
+.display-none {
+    display: none;
+}
+
+.dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    .d3-chart{
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        > div {
+            margin: 0 auto;
+            text-align: center;
+        }
+        > p {
+            font-size: 0.8em;
+            max-width: 236px;
+            text-align: center;
+            margin: 10px auto;
+        }
+    }
+}
+
+
 .d3-chart {
     margin-bottom: 1em;
     .data-point {
         stroke-width: 2px;
         stroke: white;
         cursor: pointer;
+    }
+    .each-series {
+        * {
+            opacity: 1;
+            transition: opacity 0.5s linear;
+        }
+        .is-not-a-number {
+            opacity: 0;
+        }
     }
     .color-0 {
         .line, &.line {
