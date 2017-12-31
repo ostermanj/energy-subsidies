@@ -693,7 +693,7 @@ export const Charts = (function(){
                         }
                         var html = '<strong>' + this.parent.tipText(d.series) + '</strong> (' + d.year + ')<br />' + prefix + d3.format(',')(d[this.config.variableY]);
                         if ( this.parent.units(d.series) && this.parent.units(d.series) !== ''){
-                            suffix = this.parent.units(d.series).replace('$','').replace(/s$/,'');
+                            suffix = this.parent.units(d.series).replace('$','');
                             html += ' ' + suffix;
                         }
                         var cum = this.config.variableY.replace('_value','_cum');
