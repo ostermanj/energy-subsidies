@@ -595,12 +595,14 @@ export const Charts = (function(){
             this.labels = this.labelGroups
                 .attr('transform', (d) => `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`)
                 .append('a')
+                .attr('title','click to bring to front')
                 .attr('xlink:href','#')
                 .attr('tabindex',-1)
                 .attr('focusable',false)
                 .attr('y', 0)
-                .on('click', () => {
+                .on('click', (d,i,array) => {
                     d3.event.preventDefault();
+                    this.bringToTop.call(array[i].parentNode); 
                 })
                 .append('text') 
                 .attr('class', 'series-label')
@@ -747,7 +749,7 @@ export const Charts = (function(){
 
         },
         bringToTop(){
-            console.log(this.parentNode !== this.parentNode.parentNode.lastChild);
+            console.log(this);
             if ( this.parentNode !== this.parentNode.parentNode.lastChild ){
                 console.log('click', this);
                 d3.select(this.parentNode).moveToFront();
