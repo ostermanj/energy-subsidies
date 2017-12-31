@@ -9,7 +9,7 @@
     <script src="https://cdn.polyfill.io/v2/polyfill.js"></script>
     <script src="dev-js/scripts.js"></script>
     <link rel="stylesheet" type="text/css" href="http://www.rff.org/sites/all/themes/rff_theme/css/styles.css?p05msg" />
-    <link rel="stylesheet" type="text/css" href="dev-css/styles.css" />
+    <link rel="stylesheet" type="text/css" href="css/styles.css" />
 </head>
 <body style="max-width: 728px;margin: 0 auto;">
     
@@ -55,58 +55,55 @@
             <input onchange="changeHandler()" id="both" type="radio" name="target" value="both" checked />
             <label for="both">Coal and nuclear</label>
             <input onchange="changeHandler()" id="nuclear" type="radio" name="target" value="nuclear" />
-            <label for="nuclear">Nuclear only</label>
+            <label for="nuclear">Nuclear only (10-year)</label>
             <input onchange="changeHandler()" id="coal" type="radio" name="target" value="coal" />
-            <label for="coal">Coal only</label>
+            <label for="coal">Coal only (10-year)</label>
         </div>
 
         <div>
-            <input onchange="changeHandler()" id="twenty-five" type="radio" name="length" value="25" checked />
-            <label for="twenty-five">25 years</label>
-            <input onchange="changeHandler()" id="ten" type="radio" name="length" value="10" />
+            <input onchange="changeHandler()" id="ten" type="radio" name="length" value="10" checked />
             <label for="ten">10 years</label>
+            <input onchange="changeHandler()" id="twenty-five" type="radio" name="length" value="25" />
+            <label for="twenty-five">25 years</label>
         </div>
     </form>
-    <div class="d3-group dashboard" data-sheet-id="1_G9HsJbxRBd7fWTF51Xr8lpxGxxImVcc-rTIaQbEeyA" data-nest-by='["category","series"]' data-data-tab="Sheet1" data-dictionary-tab="dictionary" data-variable-y="pb25l_value" data-variable-x="year" data-type="line" data-svg-width="242" data-direct-label="true" data-scale-by='["pb25l_value","pb10l_value", "pc10l_value", "pn10l_value", "cb25l_value", "cb10l_value", "cb10l_value","cn10l_value"]' data-svg-height="140">
-        
-    </div>
-    <div class="d3-chart group-1" data-category="capacity" data-series='all' data-series-group='[["coal-total","coal-eligible","coal-ineligible"],["nuclear-total","nuclear-eligible","nuclear-ineligible"]]' data-margin-right="85" data-reset-colors="true"></div>
+    <div class="d3-group" data-sheet-id="1_G9HsJbxRBd7fWTF51Xr8lpxGxxImVcc-rTIaQbEeyA" data-nest-by='["category","series"]' data-data-tab="Sheet1" data-dictionary-tab="dictionary" data-variable-y="pb10l_value" data-variable-x="year" data-type="line" data-svg-width="242" data-direct-label="true" data-scale-by='["pb25l_value","pb10l_value", "pc10l_value", "pn10l_value", "cb25l_value", "cb10l_value", "cb10l_value","cn10l_value"]' data-svg-height="140"></div>
+    <div class="dashboard">
+        <div class="d3-chart group-1" data-category="capacity" data-series='all' data-series-group='[["coal-total","coal-eligible","coal-ineligible"],["nuclear-total","nuclear-eligible","nuclear-ineligible"]]' data-margin-right="85" data-reset-colors="true"></div>
 
-    <div class="d3-chart group-1" data-category="generation" data-series='all' data-series-group='all'></div>
-    
-    
-    <div class="d3-chart group-1" data-category="death" data-series="all" data-series-group='"none"'></div>
-    
-    <div class="d3-chart group-1" data-category="emissions" data-series="all" data-series-group='[["carbon"],["sulfur","nitrogen"]]' data-reset-scale='["carbon", "sulfur"]'></div>
-    <div class="d3-chart group-1" data-category="price" data-series="all" data-series-group='[["total_price","lmp","uplift"]]' data-margin-right="75"></div>
-    
-    <div class="d3-chart group-1" data-category="benefits" data-series="all" data-series-group='[["total","end-user", "environmental","generator"],["government"]]' data-margin-right="75" data-x-axis-position="zero"></div>
+        <div class="d3-chart group-1" data-category="generation" data-series='all' data-series-group='all'></div>
+        
+        
+        <div class="d3-chart group-1" data-category="death" data-series="all" data-series-group='"none"'></div>
+        
+        <div class="d3-chart group-1" data-category="emissions" data-series="all" data-series-group='[["carbon"],["sulfur","nitrogen"]]' data-reset-scale='["carbon", "sulfur"]'></div>
+        <div class="d3-chart group-1" data-category="price" data-series="all" data-series-group='[["total_price","lmp","uplift"]]' data-margin-right="75"></div>
+        
+        <div class="d3-chart group-1" data-category="benefits" data-series="all" data-series-group='[["total","end-user", "environmental","generator"],["government"]]' data-margin-right="75" data-x-axis-position="zero"></div>
+    </div>
     <script type="text/javascript">
         D3Charts.Init();
             var _this = this;
-            var userSelectedTen = false;
             var form = document.querySelector('#forms');
             form.querySelectorAll('input').forEach(function(each){
                 each.onchange = function(){
-                    if ( this.value === '10' ){
-                        userSelectedTen = true;
-                    } else if ( this.value === '25' ){
-                        userSelectedTen = false;
-                    }
-                    console.log(userSelectedTen);
                     if ( this.value === 'nuclear' || this.value === 'coal' ){
-                        document.querySelector('input#twenty-five').checked = false;
                         document.querySelector('input#twenty-five').setAttribute('disabled', true);
                         document.querySelector('input#ten').setAttribute('disabled', true);
-                        document.querySelector('input#ten').checked = true;
                     } else if ( this.value === 'both' ){
                         document.querySelector('input#twenty-five').removeAttribute('disabled');
                         document.querySelector('input#ten').removeAttribute('disabled');
-                        if ( !userSelectedTen ) {
-                            document.querySelector('input#ten').checked = false;
-                            document.querySelector('input#twenty-five').checked = true;
-                        }
-                    } 
+                    } else if ( this.value === '25' ){
+                        document.querySelector('input#nuclear').setAttribute('disabled', true);
+                        document.querySelector('label[for=nuclear]').className = 'disabled';
+                        document.querySelector('input#coal').setAttribute('disabled', true);
+                        document.querySelector('label[for=coal]').className = 'disabled';
+                    } else if ( this.value === '10' ){
+                        document.querySelector('input#nuclear').removeAttribute('disabled');
+                        document.querySelector('label[for=nuclear]').className = '';
+                        document.querySelector('input#coal').removeAttribute('disabled');
+                        document.querySelector('label[for=coal]').className = '';
+                    }
                     var forms = document.querySelector('#forms');
                     var inputs = forms.querySelectorAll('input');
                     var values = [];

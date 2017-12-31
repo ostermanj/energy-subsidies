@@ -191,10 +191,18 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         flex-shrink: 1;
         input {
             top: 0;
+            cursor: pointer;
+            &[disabled] {
+                cursor: not-allowed;
+            }
         }
         label {
             margin-top: 0;
             padding-left: 1.6em;
+            &.disabled {
+                color: $a11y_gray;
+                cursor: not-allowed;
+            }
         }
     }
 }

@@ -116,10 +116,16 @@
     flex-grow: 1;
     flex-shrink: 1; }
     #forms > div input {
-      top: 0; }
+      top: 0;
+      cursor: pointer; }
+      #forms > div input[disabled] {
+        cursor: not-allowed; }
     #forms > div label {
       margin-top: 0;
       padding-left: 1.6em; }
+      #forms > div label.disabled {
+        color: #767676;
+        cursor: not-allowed; }
 
 .x-axis .tick:first-of-type {
   display: none; }
