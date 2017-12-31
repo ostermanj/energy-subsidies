@@ -15,12 +15,46 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
     flex-wrap: wrap;
 }
 
+.display-none {
+    display: none;
+}
+
+.dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    .d3-chart{
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        > div {
+            margin: 0 auto;
+            text-align: center;
+        }
+        > p {
+            font-size: 0.8em;
+            max-width: 236px;
+            text-align: center;
+            margin: 10px auto;
+        }
+    }
+}
+
+
 .d3-chart {
     margin-bottom: 1em;
     .data-point {
         stroke-width: 2px;
         stroke: white;
         cursor: pointer;
+    }
+    .each-series {
+        * {
+            opacity: 1;
+            transition: opacity 0.5s linear;
+        }
+        .is-not-a-number {
+            opacity: 0;
+        }
     }
     .color-0 {
         .line, &.line {
@@ -155,12 +189,12 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         width: 33%;
         flex-grow: 1;
         flex-shrink: 1;
-        min-width: 150px;
         input {
             top: 0;
         }
         label {
             margin-top: 0;
+            padding-left: 1.6em;
         }
     }
 }
@@ -234,7 +268,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         text-align: center;
     }
     &.e:after {
-        content: "\25C0";
+        content: "\25C0 \FE0E";
         margin: -4px 0 0;
         top: 50%;
         left: -8px;
@@ -247,7 +281,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         text-align: center;
     }
     &.w:after {
-        content: "\25B6";
+        content: "\25B6 \FE0E";
         margin: -4px 0 0 -1px;
         top: 50%;
         left: 100%;

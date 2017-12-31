@@ -18,11 +18,11 @@ var D3Charts = (function(){
         this.config = container.dataset.convert();
         
         this.dataPromises = this.returnDataPromises(container);
-        this.children = [];
-        
+        this.children = []; 
+        this.collectAll = [];
         //this.controller.initController(container, this.model, this.view);
         this.dataPromises.then(() => {
-            this.initializeCharts(container);
+            this.initializeCharts(container, index);
         });
     };
     //prototype begins here
@@ -143,9 +143,10 @@ var D3Charts = (function(){
                         .entries(unnested);
                 }
             },
-            initializeCharts(container){
+            initializeCharts(container, index){
+                console.log(container);
                 var group = this;
-                d3.select(container).selectAll('.d3-chart')
+                d3.selectAll('.d3-chart.group-' + index)
                     .each(function(){
                         group.children.push(new Charts.ChartDiv(this, group));
                     });
@@ -162,10 +163,15 @@ var D3Charts = (function(){
             console.log(groupCollection);
             
         },
-        CollectAll:[],
+        collectAll:[],
         UpdateAll(variableY){
-            console.log(this.CollectAll);
-            this.CollectAll.forEach(each => {
+            console.log(this.collectAll);
+            this.collectAll.forEach(each => {
+                each.update(variableY);
+            });
+        },
+        UpdateGroup(index,variableY){
+            groupCollection[index].collectAll.forEach(each => {
                 each.update(variableY);
             });
         }

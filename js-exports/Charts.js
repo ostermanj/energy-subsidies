@@ -6,8 +6,7 @@ export const Charts = (function(){
         this.parent = parent;
         this.children = [];
         this.seriesCount = 0;
-        var configObj = container.dataset.convert();
-        console.log(configObj);
+        console.log(this);
         this.config = Object.create( parent.config, Object.getOwnPropertyDescriptors( container.dataset.convert() ) );
             // line above creates a config object from the HTML dataset for the chartDiv container
             // that inherits from the parents config object. any configs not specified for the chartDiv (an own property)
@@ -30,6 +29,7 @@ export const Charts = (function(){
         if ( this.config.heading !== false ){
             this.addHeading(this.config.heading);
         }
+        d3.select(this.container).append('div');
         this.createCharts();
       };
 
@@ -140,12 +140,12 @@ export const Charts = (function(){
         this.width = this.config.svgWidth ? +this.config.svgWidth - this.marginRight - this.marginLeft : 320 - this.marginRight - this.marginLeft;
         this.height = this.config.svgHeight ? +this.config.svgHeight - this.marginTop - this.marginBottom : ( this.width + this.marginRight + this.marginLeft ) / 2 - this.marginTop - this.marginBottom;
         this.data = seriesGroup;
-        
+        this.resetColors = this.config.resetColors || false;
         this.container = this.init(parent.container); // TO DO  this is kinda weird
         this.xScaleType = this.config.xScaleType || 'time';
         this.yScaleType = this.config.yScaleType || 'linear';
         this.xTimeType = this.config.xTimeType || '%Y';
-        this.scaleBy = this.config.scaleBy || 'series-group';
+        this.scaleBy = this.config.scaleBy || this.config.variableY;
         this.isFirstRender = true;
         this.setScales(); // //SHOULD BE IN CHART PROTOTYPE 
         this.setTooltips();
@@ -167,8 +167,10 @@ export const Charts = (function(){
         },
               
         init(chartDiv){ // //SHOULD BE IN CHART PROTOTYPE this is called once for each seriesGroup of each category. 
-            D3Charts.CollectAll.push(this);
-            var container =  d3.select(chartDiv)
+            D3Charts.collectAll.push(this); // pushes all charts on the page to one collection
+            this.parent.parent.collectAll.push(this);  // pushes all charts from one ChartGroup to the ChartGroup's collection
+
+            var container =  d3.select(chartDiv).select('div')
                 .append('svg')
                 .attr('focusable', false)
                 .attr('width', this.width + this.marginRight + this.marginLeft )
@@ -183,6 +185,9 @@ export const Charts = (function(){
 
             this.allSeries = this.svg.append('g');
 
+            if ( this.resetColors ){
+                this.parent.seriesCount = 0;
+            }
             this.eachSeries = this.allSeries.selectAll('each-series')
                 .data(this.data, d => d.key)
                 .enter().append('g')
@@ -241,15 +246,18 @@ export const Charts = (function(){
                 // TO DO: add all scale types.
             };
             var xMaxes = [], xMins = [], yMaxes = [], yMins = [];
-            if ( this.scaleBy === 'series-group' ){
-                this.data.forEach(each => {
-                    
-                    xMaxes.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableX].max);
-                    xMins.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableX].min);
-                    yMaxes.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableY].max);
-                    yMins.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableY].min);
+
+            var yVariables = Array.isArray(this.scaleBy) ? this.scaleBy : Array.isArray(this.config.variableY) ? this.config.variableY : [this.config.variableY];
+
+            this.data.forEach(each => {
+                xMaxes.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableX].max);
+                xMins.push(this.parent.parent.summaries[1][this.config.category][each.key][this.config.variableX].min);
+                yVariables.forEach(yVar => {
+                    yMaxes.push(this.parent.parent.summaries[1][this.config.category][each.key][yVar].max);
+                    yMins.push(this.parent.parent.summaries[1][this.config.category][each.key][yVar].min);
                 });
-            }
+            });
+
             this.xMax = d3.max(xMaxes);
             this.xMin = d3.min(xMins);
             this.yMax = d3.max(yMaxes);
@@ -362,24 +370,85 @@ export const Charts = (function(){
                             }
                         });
                 } else {
-                    
                     d3.selectAll(this.lines.nodes())
-                        .transition().duration(500)
-                        .attr('d', (d) => {
-                            return valueline(d.values);
+                        .each((d,i,array) => {
+                            if ( isNaN(d.values[0][this.config.variableY]) ){ // this a workaround for handling NAs
+                                                                              // would be nicer to handle via exit()
+                                                                              // but may be hard bc of how data is
+                                                                              // structured
+                                 d3.select(array[i])
+                                    .transition().duration(500)
+                                    .style('opacity',0)
+                                    .on('end', function(){
+                                        d3.select(this)
+                                            .classed('display-none', true);
+                                    });
+                            } else {
+                            d3.select(array[i])
+                                .classed('display-none', false)
+                                .transition().duration(500)
+                                .style('opacity',1)
+                                .attr('d', (d) => {
+                                    return valueline(d.values);
+                                });
+                            }
                         });
 
                     d3.selectAll(this.points.nodes())
-                        .transition().duration(500)
-                        .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
-                        .attr('cy', d => {
-                            return this.yScale(d[this.config.variableY]);
+                        .each((d,i,array) => {
+                            if ( isNaN(d[this.config.variableY]) ){ // this a workaround for handling NAs
+                                                                              // would be nicer to handle via exit()
+                                                                              // but may be hard bc of how data is
+                                                                              // structured
+                                 d3.select(array[i])
+                                    .transition().duration(500)
+                                    .style('opacity',0)
+                                    .on('end', function(){
+                                        d3.select(this)
+                                            .classed('display-none', true);
+                                    });
+                            } else {
+                                d3.select(array[i])
+                                    .classed('display-none', false)
+                                    .transition().duration(500)
+                                    .style('opacity',1)
+                                    .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
+                                    .attr('cy', d => {
+                                        return this.yScale(d[this.config.variableY]);
+                                    });
+                            }
                         });
 
 
                     d3.selectAll(this.labelGroups.nodes())
-                        .transition().duration(500)
-                        .attr('transform', (d) => `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`);
+                        .each((d,i,array) => {
+                            var labelGroup = d3.select(array[i]);
+                            if ( isNaN(d.values[d.values.length - 1][this.config.variableY]) ){
+                                
+                                 labelGroup
+                                    .transition().duration(500)
+                                    .style('opacity',0)
+                                    .on('end', function(){
+                                        labelGroup
+                                            .classed('display-none', true);
+                                        labelGroup.select('.has-tooltip')
+                                            .attr('tabindex', -1);
+                                    });
+                            } else {
+                                
+                                labelGroup
+                                    .classed('display-none', false)
+                                    .transition().duration(500)
+                                    .style('opacity',1)
+                                    .attr('transform', (d) => `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`);
+
+                                labelGroup.select('.has-tooltip')
+                                    .attr('tabindex',0);
+                            }
+                        });
+                            
+                    
+                    
 
                     d3.selectAll(this.labels.nodes())
                         .transition().duration(500)
@@ -389,7 +458,7 @@ export const Charts = (function(){
                                 this.relaxLabels();
                             }
                         });
-
+                   
                     d3.selectAll(this.yAxisGroup.nodes())
                         .transition().duration(500)
                         .call(d3.axisLeft(this.yScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(5))
@@ -526,12 +595,14 @@ export const Charts = (function(){
             this.labels = this.labelGroups
                 .attr('transform', (d) => `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`)
                 .append('a')
+                .attr('title','click to bring to front')
                 .attr('xlink:href','#')
                 .attr('tabindex',-1)
                 .attr('focusable',false)
                 .attr('y', 0)
-                .on('click', () => {
+                .on('click', (d,i,array) => {
                     d3.event.preventDefault();
+                    this.bringToTop.call(array[i].parentNode); 
                 })
                 .append('text') 
                 .attr('class', 'series-label')
@@ -576,6 +647,7 @@ export const Charts = (function(){
                 again = false;
 
             this.labels.each((d,i,array1) => {
+
                 var a = array1[i],
                     $a = d3.select(a),
                     yA = $a.attr('y'),
@@ -677,7 +749,7 @@ export const Charts = (function(){
 
         },
         bringToTop(){
-            console.log(this.parentNode !== this.parentNode.parentNode.lastChild);
+            console.log(this);
             if ( this.parentNode !== this.parentNode.parentNode.lastChild ){
                 console.log('click', this);
                 d3.select(this.parentNode).moveToFront();
