@@ -102,7 +102,7 @@ module.exports = function(grunt){
             },
             js: {
                 files: ['dev-js/*.es6','js-exports/*.js'],
-                tasks: ['jshint','browserify']
+                tasks: ['jshint','browserify', 'uglify']
             },
             scss: {
                 files: ['dev-css/*.scss'], 
