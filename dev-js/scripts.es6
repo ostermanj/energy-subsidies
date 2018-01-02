@@ -42,7 +42,7 @@ var D3Charts = (function(){
                             var values = data.values;
                             var nestType = each === 'dictionary' ? 'object' : 'series'; // nestType for data should come from HTML
                             var nestBy = each === 'dictionary' ? false : this.config.nestBy;
-                            resolve(this.returnKeyValues(values, nestBy, true, nestType, i)); 
+                            resolve(this.returnKeyValues(values, nestBy, true, nestType, i, this.config.normalizeColumnsStart)); 
                         });
                     });
                     dataPromises.push(promise);
@@ -106,20 +106,39 @@ var D3Charts = (function(){
                     }
                     return rtn;
                 }, d3.nest());
+            },
+            returnNormalizedValues(values, start){
+
+                console.log(values);
+
+                values.slice(1).forEach(row => {
+                    row.reduce(function(acc, cur, i) {
+                        // slice each row starting at start value
+                        // for each item in that array push 'property'
+                        // from values[0][i] and curr value to
+                        // the repeating first part of the array.
+                    },[]);
+                });                
+                return values;
             },       
-            returnKeyValues(values, nestBy, coerce = false, nestType = 'series', tabIndex = 0){
+            returnKeyValues(values, nestBy, coerce = false, nestType = 'series', tabIndex = 0, normalizeColumnsStart = undefined){
             // this fn takes normalized data fetched as an array of rows and uses the values in the first row as keys for values in
             // subsequent rows
             // nestBy = string or array of field(s) to nest by, or a custom function, or an array of strings or functions;
             // coerce = BOOL coerce to num or not; nestType = object or series nest (d3)
-                
                 var prelim;
-                
+                if ( normalizeColumnsStart !== undefined && tabIndex === 0 )  {
+                    values = this.returnNormalizedValues(values, normalizeColumnsStart);
+                } 
                 var unnested = values.slice(1).map(row => row.reduce(function(acc, cur, i) { 
+
                 // 1. params: total, currentValue, currentIndex[, arr]
                 // 3. // acc is an object , key is corresponding value from row 0, value is current value of array
-                  acc[values[0][i]] = coerce === true ? isNaN(+cur) || cur === '' ? cur : +cur : cur; 
-                    return acc;                                        // test for empty strings before coercing bc +'' => 0
+            
+                    acc[values[0][i]] = coerce === true ? isNaN(+cur) || cur === '' ? cur : +cur : cur; 
+                    return acc;
+            
+                                                      // test for empty strings before coercing bc +'' => 0
                 }, {}));
                 if ( tabIndex === 0 ) {
                     this.unnested = unnested;

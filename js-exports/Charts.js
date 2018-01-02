@@ -6,7 +6,6 @@ export const Charts = (function(){
         this.parent = parent;
         this.children = [];
         this.seriesCount = 0;
-        console.log(this);
         this.config = Object.create( parent.config, Object.getOwnPropertyDescriptors( container.dataset.convert() ) );
             // line above creates a config object from the HTML dataset for the chartDiv container
             // that inherits from the parents config object. any configs not specified for the chartDiv (an own property)
