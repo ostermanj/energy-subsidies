@@ -6,7 +6,7 @@
     <meta charset="UTF-8" />
     <title>Energy subsidies</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.12.0/d3.min.js"></script>
-    <script src="https://cdn.polyfill.io/v2/polyfill.js"></script>
+    <script src="https://cdn.polyfill.io/v2/polyfill.js?features=Promise"></script>
     <script src="dev-js/scripts.js"></script>
     <link rel="stylesheet" type="text/css" href="http://www.rff.org/sites/all/themes/rff_theme/css/styles.css?p05msg" />
     <link rel="stylesheet" type="text/css" href="dev-css/styles.css" />
@@ -67,7 +67,7 @@
             <label for="twenty-five">25 years</label>
         </div>
     </form>
-    <div class="d3-group" data-sheet-id="1_G9HsJbxRBd7fWTF51Xr8lpxGxxImVcc-rTIaQbEeyA" data-nest-by='["category","series"]' data-data-tab="Sheet1" data-dictionary-tab="dictionary" data-variable-y="pb10l_value" data-variable-x="year" data-type="line" data-svg-width="253" data-direct-label="true" data-scale-by='["pb25l_value","pb10l_value", "pc10l_value", "pn10l_value", "cb25l_value", "cb10l_value", "cb10l_value","cn10l_value"]' data-svg-height="140" data-margin-bottom="45"></div>
+    <div class="d3-group" data-sheet-id="1_G9HsJbxRBd7fWTF51Xr8lpxGxxImVcc-rTIaQbEeyA" data-nest-by='["category","series"]' data-data-tab="Sheet1" data-dictionary-tab="dictionary" data-variable-y="pb10l_value" data-variable-x="year" data-type="line" data-svg-width="239" data-direct-label="true" data-scale-by='["pb25l_value","pb10l_value", "pc10l_value", "pn10l_value", "cb25l_value", "cb10l_value", "cb10l_value","cn10l_value"]' data-svg-height="140" data-margin-bottom="45"></div>
     <div class="dashboard">
         <div class="d3-chart group-1" data-category="capacity" data-series='all' data-series-group='[["coal-total","coal-eligible","coal-ineligible"],["nuclear-total","nuclear-eligible","nuclear-ineligible"]]' data-margin-right="90" data-reset-colors="true"></div>
 
@@ -82,6 +82,7 @@
         <div class="d3-chart group-1" data-category="benefits" data-series="all" data-series-group='[["total","end-user", "environmental","generator"]]' data-margin-right="75" data-x-axis-position="zero"></div>
     </div>
     <script type="text/javascript">
+
         D3Charts.Init();
             var _this = this;
             var form = document.querySelector('#forms');

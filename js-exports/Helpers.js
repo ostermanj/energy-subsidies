@@ -7,7 +7,9 @@ export const Helpers = (function(){
     String.prototype.removeUnderscores = function() { 
         return this.replace(/_/g,' ');
     };
-
+    if (typeof DOMStringMap === 'undefined') {
+       alert("Your browser is out of date and cannot render this page's interactive charts. Please upgrade");
+    }
     DOMStringMap.prototype.convert = function() {
         var newObj = {};
         for ( var key in this ){
@@ -22,6 +24,7 @@ export const Helpers = (function(){
         }
         return newObj;
     };
+    
 
     d3.selection.prototype.moveToFront = function(){
         return this.each(function(){
