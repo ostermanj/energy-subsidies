@@ -282,7 +282,7 @@ export const d3Tip = (function(){
     function getScreenBBox() {
       var targetel   = target || d3.event.target;
       console.log(targetel);
-    /*  function tryBBox(){
+      function tryBBox(){
         try {
           targetel.getBBox();
         }
@@ -290,8 +290,8 @@ export const d3Tip = (function(){
           targetel = targetel.parentNode;
           tryBBox();
         }
-      }*/
-     // tryBBox();
+      }
+      tryBBox();
       while ('undefined' === typeof targetel.getScreenCTM ){// && 'undefined' === targetel.parentNode) {
           targetel = targetel.parentNode;
       }
