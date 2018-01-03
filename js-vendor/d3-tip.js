@@ -281,7 +281,8 @@ export const d3Tip = (function(){
     // Returns an Object {n, s, e, w, nw, sw, ne, se}
     function getScreenBBox() {
       var targetel   = target || d3.event.target;
-      function tryBBox(){
+      console.log(targetel);
+    /*  function tryBBox(){
         try {
           targetel.getBBox();
         }
@@ -289,11 +290,12 @@ export const d3Tip = (function(){
           targetel = targetel.parentNode;
           tryBBox();
         }
-      }
-      tryBBox();
+      }*/
+     // tryBBox();
       while ('undefined' === typeof targetel.getScreenCTM ){// && 'undefined' === targetel.parentNode) {
           targetel = targetel.parentNode;
       }
+      console.log(targetel);
       var bbox       = {},
           matrix     = targetel.getScreenCTM(),
           tbbox      = targetel.getBBox(),

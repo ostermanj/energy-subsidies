@@ -807,5 +807,5 @@ export const Charts = (function(){
     return {
         ChartDiv
     };
-
+ 
 })();
