@@ -34,7 +34,6 @@ export const d3Tip = (function(){
     tip.show = function() {
       var args = Array.prototype.slice.call(arguments)
       if(args[args.length - 1] instanceof SVGElement) target = args.pop()
-
       var content = html.apply(this, args),
           poffset = offset.apply(this, args),
           dir     = direction.apply(this, args),
@@ -282,11 +281,19 @@ export const d3Tip = (function(){
     // Returns an Object {n, s, e, w, nw, sw, ne, se}
     function getScreenBBox() {
       var targetel   = target || d3.event.target;
-
-      while ('undefined' === typeof targetel.getScreenCTM && 'undefined' === targetel.parentNode) {
+      function tryBBox(){
+        try {
+          targetel.getBBox();
+        }
+        catch (err) {
+          targetel = targetel.parentNode;
+          tryBBox();
+        }
+      }
+      tryBBox();
+      while ('undefined' === typeof targetel.getScreenCTM ){// && 'undefined' === targetel.parentNode) {
           targetel = targetel.parentNode;
       }
-
       var bbox       = {},
           matrix     = targetel.getScreenCTM(),
           tbbox      = targetel.getBBox(),

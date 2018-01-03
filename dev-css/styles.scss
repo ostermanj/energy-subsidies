@@ -28,13 +28,12 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         justify-content: space-between;
         > div {
             margin: 0 auto;
-            text-align: center;
+            
         }
         > p {
             font-size: 0.8em;
             max-width: 236px;
-            text-align: center;
-            margin: 10px auto;
+           
         }
     }
 }
@@ -45,7 +44,10 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
     .data-point {
         stroke-width: 2px;
         stroke: white;
-        cursor: pointer;
+        cursor: pointer; 
+    }
+    .series-label {
+        stroke-width: 0;
     }
     .each-series {
         * {
@@ -63,6 +65,9 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         .series-label, .data-point {
             fill: $blue;
         }
+        .series-label {
+            stroke: $blue;
+        }
         &.area-line {
             fill: rgba($blue, 0.3);
         }
@@ -73,6 +78,9 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         }
         .series-label, .data-point {
             fill: $green;
+        }
+        .series-label {
+            stroke: $green;
         }
         &.area-line {
             fill: rgba($green, 0.3);
@@ -85,6 +93,9 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         .series-label, .data-point {
             fill: $gold;
         }
+         .series-label {
+            stroke: $gold;
+        }
         &.area-line {
             fill: rgba($gold, 0.3);
         }
@@ -96,6 +107,9 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         .series-label, .data-point {
             fill: lighten($blue, 50%);
         }
+        .series-label{
+            stroke: lighten($blue, 50%);
+        }
         &.area-line {
             fill: lighten(rgba($gold, 0.3), 50%);
         }
@@ -103,6 +117,10 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
     & .line {
         stroke-width: 2px;
         stroke: black;
+        /*transform: stroke-width 4s linear;
+        &.highlight {
+            stroke-width: 4px; 
+        }*/
     }
     .has-tooltip {
         cursor:pointer;
@@ -114,7 +132,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         }
         a[focusable="false"] {
             cursor: default;
-        }
+        } 
         &.heading-info {
             width: 25px;
             height: 25px;

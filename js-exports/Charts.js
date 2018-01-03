@@ -94,14 +94,16 @@ export const Charts = (function(){
 
                 heading.select('.heading-info a')
                     .classed('has-tooltip', true)
-                    .on('mouseover', function(){
-                        this.focus();
+                    .on('mouseover', function(d,i,array){
+                        //this.focus();
+                        mouseover.call(array[i]);
                     })
                     .on('focus', () => {  
                         mouseover.call(this);
                     })
                     .on('mouseout', function(){
-                        this.blur();
+                        //this.blur();
+                        labelTooltip.hide();
                         //this.setAttribute('disabled','true');
                     })
                     .on('blur', labelTooltip.hide)
@@ -172,7 +174,7 @@ export const Charts = (function(){
 
             var container =  d3.select(chartDiv).select('div')
                 .append('svg')
-                .attr('focusable', false)
+                //.attr('focusable', false)
                 .attr('width', this.width + this.marginRight + this.marginLeft )
                 .attr('height', this.height  + this.marginTop + this.marginBottom );
 
@@ -297,6 +299,29 @@ export const Charts = (function(){
 
 
         },
+        highlightSeries(){
+            var series = d3.select(this);
+            console.log(series);
+            series.select('path')
+                .transition().duration(100)
+                .style('stroke-width',4);
+
+            series.select('.series-label')
+                .transition().duration(100)
+                .style('stroke-width',0.4);
+
+        },
+        removeHighlight(){
+            var series = d3.select(this);
+            series.select('path')
+                .transition().duration(100).delay(100)
+                .style('stroke-width',null);
+
+            series.select('.series-label')
+                .transition().duration(100).delay(100)
+                .style('stroke-width',null);
+
+        },
         addLines(){
             var zeroValueline = d3.line()
                 .x(d => {
@@ -357,6 +382,12 @@ export const Charts = (function(){
                         .attr('class','line')
                         .attr('d', (d) => {
                             return zeroValueline(d.values);
+                        })
+                        .on('mouseover', (d,i,array) => {
+                            this.highlightSeries.call(array[i].parentNode);
+                        })
+                        .on('mouseout', (d,i,array) => {
+                            this.removeHighlight.call(array[i].parentNode);
                         })
                         .transition().duration(500).delay(150)
                         .attr('d', (d) => {
@@ -440,7 +471,7 @@ export const Charts = (function(){
                                     .classed('display-none', false)
                                     .transition().duration(500)
                                     .style('opacity',1)
-                                    .attr('transform', (d) => `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`);
+                                    .attr('transform', (d) => `translate(${this.width + 13}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`);
 
                                 labelGroup.select('.has-tooltip')
                                     .attr('tabindex',0);
@@ -486,7 +517,7 @@ export const Charts = (function(){
                 axisType = d3.axisTop;
             } else {
                 xAxisPosition = this.yMin;
-                xAxisOffset = this.marginBottom - 15;
+                xAxisOffset = 10;
                 axisType = d3.axisBottom;
             }
             var axis = axisType(this.xScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1);
@@ -548,15 +579,13 @@ export const Charts = (function(){
                         .attr('tabindex',0)
                         .attr('focusable',true)
                         .classed('has-tooltip', true)
-                        .on('mouseover', (d,i,array) => {
-                            array[i].focus();
+                        .on('mouseover', d => {
+                            mouseover.call(this,d);
                         })
                         .on('focus', d => {
                             mouseover.call(this,d);
                         })
-                        .on('mouseout', (d,i,array) => {
-                            array[i].blur();
-                        })
+                        .on('mouseout', labelTooltip.hide)
                         .on('blur', labelTooltip.hide)
                         .call(labelTooltip);   
                         
@@ -573,29 +602,28 @@ export const Charts = (function(){
             
         },
         addLabels(){
-
+      
             var labelTooltip = d3.tip()
                 .attr("class", "d3-tip label-tip")
                 .direction('n')
                 .offset([-4, 12]);
                 
 
-            function mouseover(d){
-                if ( window.openTooltip ) {
+            function mouseover(d, i, array){
+               if ( window.openTooltip ) {
                     window.openTooltip.hide();
                 }
                 labelTooltip.html(this.parent.description(d.key));
-                labelTooltip.show();
+                labelTooltip.show.call(array[i].firstChild);
                 window.openTooltip = labelTooltip;
             }
 
             this.labelGroups = this.eachSeries
                 .append('g');
-
+ 
             this.labels = this.labelGroups
-                .attr('transform', (d) => `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`)
+                .attr('transform', (d) => `translate(${this.width + 13}, ${this.yScale(d.values[d.values.length - 1][this.config.variableY]) + 3})`)
                 .append('a')
-                .attr('title','click to bring to front')
                 .attr('xlink:href','#')
                 .attr('tabindex',-1)
                 .attr('focusable',false)
@@ -603,6 +631,12 @@ export const Charts = (function(){
                 .on('click', (d,i,array) => {
                     d3.event.preventDefault();
                     this.bringToTop.call(array[i].parentNode); 
+                })
+                .on('mouseover.highlight', (d,i,array) => {
+                    this.highlightSeries.call(array[i].parentNode.parentNode);
+                })
+                .on('mouseout.highlight', (d,i,array) => {
+                    this.removeHighlight.call(array[i].parentNode.parentNode);
                 })
                 .append('text') 
                 .attr('class', 'series-label')
@@ -612,19 +646,18 @@ export const Charts = (function(){
             
             this.labels.each((d, i, array) => {
                 if ( this.parent.description(d.key) !== undefined && this.parent.description(d.key) !== ''){
+
                     d3.select(array[i].parentNode)
-                        .attr('tabindex',0)
+                        .attr('tabindex',null)
                         .attr('focusable',true)
                         .classed('has-tooltip', true)
-                        .on('mouseover', (d,i,array) => {
-                            array[i].focus();
+                        .on('mouseover.tooltip', (d, i, array) => {
+                            mouseover.call(this,d,i,array);
                         })
                         .on('focus', d => {
-                            mouseover.call(this,d);
+                            mouseover.call(this,d,i,array);
                         })
-                        .on('mouseout', (d,i,array) => {
-                            array[i].blur();
-                        })
+                        .on('mouseout.tooltip', labelTooltip.hide)
                         .on('blur', labelTooltip.hide)
                         .call(labelTooltip);
                         
@@ -723,16 +756,20 @@ export const Charts = (function(){
                 .attr('cy', d => this.yScale(d[this.config.variableY]))
                 .on('mouseover', (d,i,array) => {
                     console.log(array[i]);
-                    array[i].focus();
+                    mouseover.call(this,d,i,array);
+                    this.highlightSeries.call(array[i].parentNode);
                 })
                 .on('focus', (d,i,array) => {
                     mouseover.call(this,d,i,array);
+                    this.highlightSeries.call(array[i].parentNode);
                 })
                 .on('mouseout', (d,i,array) => {
-                    array[i].blur();
-                })
-                .on('blur', () => {
                     mouseout.call(this);
+                    this.removeHighlight.call(array[i].parentNode);
+                })
+                .on('blur', (d,i,array) => {
+                    mouseout.call(this);
+                     this.removeHighlight.call(array[i].parentNode);
                 })
                 .on('click', this.bringToTop)
                 .on('keyup', (d,i,array) => {
