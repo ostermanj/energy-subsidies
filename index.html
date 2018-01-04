@@ -7,9 +7,8 @@
     <title>Energy subsidies</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.12.0/d3.min.js"></script>
     <script src="https://cdn.polyfill.io/v2/polyfill.js?features=Promise"></script>
-    <script src="dev-js/scripts.js"></script>
     <link rel="stylesheet" type="text/css" href="http://www.rff.org/sites/all/themes/rff_theme/css/styles.css?p05msg" />
-    <link rel="stylesheet" type="text/css" href="dev-css/styles.css" />
+    <link rel="stylesheet" type="text/css" href="css/styles.min.css" />
 </head>
 <body style="max-width: 760px;margin: 0 auto;">
     
@@ -45,25 +44,25 @@
     <p><strong>Settings</strong></p>
     <form id="forms">
         <div>
-            <input onchange="changeHandler()" id="profit" type="radio" name="type" value="profit" checked />
+            <input id="profit" type="radio" name="type" value="profit" checked />
             <label for="profit">Profit guarantee</label>
-            <input onchange="changeHandler()" id="cost" type="radio" name="type" value="cost" />
+            <input id="cost" type="radio" name="type" value="cost" />
             <label for="profit">Costs only</label>
         </div>
 
         <div>
-            <input onchange="changeHandler()" id="both" type="radio" name="target" value="both" checked />
+            <input id="both" type="radio" name="target" value="both" checked />
             <label for="both">Coal and nuclear</label>
-            <input onchange="changeHandler()" id="nuclear" type="radio" name="target" value="nuclear" />
+            <input id="nuclear" type="radio" name="target" value="nuclear" />
             <label for="nuclear">Nuclear only (10-year)</label>
-            <input onchange="changeHandler()" id="coal" type="radio" name="target" value="coal" />
+            <input id="coal" type="radio" name="target" value="coal" />
             <label for="coal">Coal only (10-year)</label>
         </div>
 
         <div>
-            <input onchange="changeHandler()" id="ten" type="radio" name="length" value="10" checked />
+            <input id="ten" type="radio" name="length" value="10" checked />
             <label for="ten">10 years</label>
-            <input onchange="changeHandler()" id="twenty-five" type="radio" name="length" value="25" />
+            <input id="twenty-five" type="radio" name="length" value="25" />
             <label for="twenty-five">25 years</label>
         </div>
     </form>
@@ -81,70 +80,7 @@
         
         <div class="d3-chart group-1" data-category="benefits" data-series="all" data-series-group='[["total","end-user", "environmental","generator"]]' data-margin-right="75" data-x-axis-position="zero"></div>
     </div>
-    <script type="text/javascript">
-
-        D3Charts.Init();
-            var _this = this;
-            var form = document.querySelector('#forms');
-            form.querySelectorAll('input').forEach(function(each){
-                each.onchange = function(){
-                    if ( this.value === 'nuclear' || this.value === 'coal' ){
-                        document.querySelector('input#twenty-five').setAttribute('disabled', true);
-                        document.querySelector('input#ten').setAttribute('disabled', true);
-                    } else if ( this.value === 'both' ){
-                        document.querySelector('input#twenty-five').removeAttribute('disabled');
-                        document.querySelector('input#ten').removeAttribute('disabled');
-                    } else if ( this.value === '25' ){
-                        document.querySelector('input#nuclear').setAttribute('disabled', true);
-                        document.querySelector('label[for=nuclear]').className = 'disabled';
-                        document.querySelector('input#coal').setAttribute('disabled', true);
-                        document.querySelector('label[for=coal]').className = 'disabled';
-                    } else if ( this.value === '10' ){
-                        document.querySelector('input#nuclear').removeAttribute('disabled');
-                        document.querySelector('label[for=nuclear]').className = '';
-                        document.querySelector('input#coal').removeAttribute('disabled');
-                        document.querySelector('label[for=coal]').className = '';
-                    }
-                    var forms = document.querySelector('#forms');
-                    var inputs = forms.querySelectorAll('input');
-                    var values = [];
-                    var variableY;
-                    for (let i = 0; i < inputs.length; i++){
-                        if ( inputs[i].checked ){
-                            values.push(inputs[i].value);
-                        }
-                    }
-                    switch (values.join('-')){
-                        case 'profit-both-25':
-                            variableY = 'pb25l_value';
-                            break;
-                        case 'profit-both-10':
-                            variableY = 'pb10l_value';
-                            break;
-                        case 'profit-coal-10':
-                            variableY = 'pc10l_value';
-                            break;
-                        case 'profit-nuclear-10':
-                            variableY = 'pn10l_value';
-                            break;
-                        case 'cost-both-25':
-                            variableY = 'cb25l_value';
-                            break;
-                        case 'cost-both-10':
-                            variableY = 'cb10l_value';
-                            break;
-                        case 'cost-coal-10':
-                            variableY = 'cc10l_value';
-                            break;
-                        case 'cost-nuclear-10':
-                            variableY = 'cn10l_value';
-                            break;
-                    }
-                    D3Charts.UpdateGroup(1, variableY);
-
-                }
-            });
-        
-    </script>  
+    <script src="js/scripts.js"></script>
+    <script src="js/energy-subsidies.js"></script>
 </body>
 </html>

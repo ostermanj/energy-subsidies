@@ -175,4 +175,5 @@ var D3Charts = (function(){
             });
         }
     };
+    window.D3Charts.Init();
 }()); // end var D3Charts IIFE
