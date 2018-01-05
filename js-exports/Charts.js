@@ -29,7 +29,8 @@ export const Charts = (function(){
         if ( this.config.heading !== false ){
             this.addHeading(this.config.heading);
         }
-        d3.select(this.container).append('div');
+        d3.select(this.container)
+            .append('div');
         this.createCharts();
       };
 
@@ -68,6 +69,7 @@ export const Charts = (function(){
         addHeading(input){
             
             var heading = d3.select(this.container)
+                .html('')
                 .append('p')
                 .attr('class','relative')
                 .html(() => {
