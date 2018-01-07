@@ -5,7 +5,10 @@ export const Rollbar = (function(){
             "Uncaught TypeError: Cannot read property 'top' of null",
             "TypeError: null is not an object (evaluating 'anchor.offset().top')",
             "TypeError: anchor.offset(...) is null",
-            "Unable to get property 'top' of undefined or null reference"
+            "Unable to get property 'top' of undefined or null reference",
+            "Cannot read property 'top' of null",
+            "null is not an object (evaluating 'anchor.offset().top')",
+            "anchor.offset(...) is null"
         ],
         captureUncaught: true,
         captureUnhandledRejections: true,
