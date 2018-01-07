@@ -1,6 +1,7 @@
- /* exported D3Charts, Helpers, d3Tip, reflect, arrayFind, SVGInnerHTML, SVGFocus */ // let's jshint know that D3Charts can be "defined but not used" in this file
+ /* exported D3Charts, Helpers, d3Tip, reflect, arrayFind, SVGInnerHTML, SVGFocus, Rollbar */ // let's jshint know that D3Charts can be "defined but not used" in this file
  /* polyfills needed: Promise, Array.isArray, Array.find, Array.filter, Reflect, Object.ownPropertyDescriptors
  */
+import { Rollbar } from '../js-vendor/rollbar'; 
 import { reflect, arrayFind, SVGInnerHTML, SVGFocus } from '../js-vendor/polyfills';
 import { Helpers } from '../js-exports/Helpers';
 import { Charts } from '../js-exports/Charts';
