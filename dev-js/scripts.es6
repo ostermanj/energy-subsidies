@@ -16,10 +16,9 @@ var D3Charts = (function(){
         this.index = index;
         this.config = container.dataset.convert();
         
-        this.dataPromises = this.returnDataPromises(container);
+        this.dataPromises = this.returnDataPromises();
         this.children = []; 
         this.collectAll = [];
-        //this.controller.initController(container, this.model, this.view);
         this.dataPromises.then(() => {
             this.initializeCharts(container, index);
         });
@@ -49,6 +48,7 @@ var D3Charts = (function(){
                 });
                 Promise.all(dataPromises).then(values => {
                     this.data = values[0];
+                    console.log('this.data',this.data);
                     this.dictionary = values[1];
                     this.summaries = this.summarizeData();
                 });
@@ -111,15 +111,18 @@ var D3Charts = (function(){
 
                 console.log(values);
 
+                var newRowsArray = [[...values[0].slice(0,start), 'property','value']];
                 values.slice(1).forEach(row => {
-                    row.reduce(function(acc, cur, i) {
-                        // slice each row starting at start value
-                        // for each item in that array push 'property'
-                        // from values[0][i] and curr value to
-                        // the repeating first part of the array.
-                    },[]);
-                });                
-                return values;
+                    var repeat = row.slice(0,start);
+                    row.slice(start).forEach((value, i) => {
+                        var newRow = [...repeat, values[0][i + start], value];
+                        if ( value !== "" ){
+                            newRowsArray.push(newRow);
+                        }
+                    });
+                });  
+                console.log('normalized', newRowsArray);              
+                return newRowsArray;
             },       
             returnKeyValues(values, nestBy, coerce = false, nestType = 'series', tabIndex = 0, normalizeColumnsStart = undefined){
             // this fn takes normalized data fetched as an array of rows and uses the values in the first row as keys for values in
@@ -140,6 +143,7 @@ var D3Charts = (function(){
             
                                                       // test for empty strings before coercing bc +'' => 0
                 }, {}));
+                console.log('unnested', unnested);
                 if ( tabIndex === 0 ) {
                     this.unnested = unnested;
                 }           
