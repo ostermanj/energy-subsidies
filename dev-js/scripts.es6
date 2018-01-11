@@ -1,6 +1,15 @@
  /* exported D3Charts, Helpers, d3Tip, reflect, arrayFind, SVGInnerHTML, SVGFocus */ // let's jshint know that D3Charts can be "defined but not used" in this file
  /* polyfills needed: Promise, Array.isArray, Array.find, Array.filter, Reflect, Object.ownPropertyDescriptors
  */
+
+/*
+initialized by windows.D3Charts.Init() which creates a new D3ChartGroup for each div.d3-group in the DOM.
+each div's data attributes supply the configuration needed. individual charts inherit from the group's onfiguration
+data but can also specify their own.
+
+groups are collected in groupCollection array 
+
+*/
 import { reflect, arrayFind, SVGInnerHTML, SVGFocus } from '../js-vendor/polyfills';
 import { Helpers } from '../js-exports/Helpers';
 import { Charts } from '../js-exports/Charts';
@@ -14,19 +23,21 @@ var D3Charts = (function(){
     var D3ChartGroup = function(container, index){
         this.container = container;
         this.index = index;
-        this.config = container.dataset.convert();
+        this.config = container.dataset.convert(); // method provided in Helpers
         
         this.dataPromises = this.returnDataPromises();
         this.children = []; 
         this.collectAll = [];
-        this.dataPromises.then(() => {
+        this.dataPromises.then(() => { // when the data promises resolve, charts are initialized
             this.initializeCharts(container, index);
         });
     };
     //prototype begins here
     D3ChartGroup.prototype = {
         
-            returnDataPromises(){ 
+            returnDataPromises(){ // gets data from Google Sheet, converst rows to key-value pairs, nests the data
+                                  // as specified by the config object, and creates array of summarized data at different
+                                  // nesting levels                                
                 var dataPromises = [];
                 var sheetID = this.config.sheetId, 
                     tabs = [this.config.dataTab,this.config.dictionaryTab]; // this should come from HTML
@@ -59,39 +70,48 @@ var D3Charts = (function(){
                              // the summaries provide average, max, min of all fields in the data at all levels of nesting. 
                              // the first (index 0) is one layer nested, the second is two, and so on.
                 
-                var summaries = [];
-                var variables = Object.keys(this.unnested[0]); // all need to have the same fields
-                var nestBy = this.config.nestBy ? this.config.nestBy.map(each => each) : false; 
-                                                                // uses map to create new array rather than assigning
-                                                                // by reference. the `pop()` below would affect original
-                                                                // array if done by reference
-                var nestByArray = Array.isArray(nestBy) ? nestBy : [nestBy];
-                function reduceVariables(d){
-                    return variables.reduce(function(acc, cur){
-                        acc[cur] = {
-                            max:       d3.max(d, d => d[cur]),
-                            min:       d3.min(d, d => d[cur]),
-                            mean:      d3.mean(d, d => d[cur]),
-                            sum:       d3.sum(d, d => d[cur]),
-                            median:    d3.median(d, d => d[cur]),
-                            variance:  d3.variance(d, d => d[cur]),
-                            deviation: d3.deviation(d, d => d[cur])
-                        };
-                        return acc;
-                    },{});
-                }
-                while ( nestByArray.length > 0) {
+               console.log(this.unnested, this.nestByArray);
+
+               var summaries = [];
+               var nestByArray = this.nestByArray.map(a => a);
+               var variableX = this.config.variableX;
+
+               function reduceVariables(d){
+                    return {
+                        y: {
+                            max:       d3.max(d, d => d.value),
+                            min:       d3.min(d, d => d.value),
+                            mean:      d3.mean(d, d => d.value),
+                            sum:       d3.sum(d, d => d.value),
+                            median:    d3.median(d, d => d.value),
+                            variance:  d3.variance(d, d => d.value),
+                            deviation: d3.deviation(d, d => d.value)
+                        },
+                        x: {
+                            max:       d3.max(d, d => d[variableX]),
+                            min:       d3.min(d, d => d[variableX]),
+                            mean:      d3.mean(d, d => d[variableX]),
+                            sum:       d3.sum(d, d => d[variableX]),
+                            median:    d3.median(d, d => d[variableX]),
+                            variance:  d3.variance(d, d => d[variableX]),
+                            deviation: d3.deviation(d, d => d[variableX])
+                        }
+                    };
+               }
+
+               while ( nestByArray.length > 0) {
                     let summarized = this.nestPrelim(nestByArray)
                         .rollup(reduceVariables)
                         .object(this.unnested);
-                    summaries.unshift(summarized);      
+                    summaries.push(summarized);      
                     nestByArray.pop();
                 }
+                console.log(summaries);
                 return summaries;
             }, 
             nestPrelim(nestByArray){
                 // recursive  nesting function used by summarizeData and returnKeyValues
-                return nestByArray.reduce(function(acc, cur){
+                return nestByArray.reduce((acc, cur) => {
                     if (typeof cur !== 'string' && typeof cur !== 'function' ) { throw 'each nestBy item must be a string or function'; }
                     var rtn;
                     if ( typeof cur === 'string' ){
@@ -104,6 +124,7 @@ var D3Charts = (function(){
                             return cur(d);
                         });
                     }
+                    console.log(rtn.entries(this.unnested));
                     return rtn;
                 }, d3.nest());
             },
@@ -151,11 +172,12 @@ var D3Charts = (function(){
                     return unnested;
                 } else {
                     if ( typeof nestBy === 'string' || typeof nestBy === 'function' ) { // ie only one nestBy field or funciton
-                        prelim = this.nestPrelim([nestBy]);
+                        this.nestByArray = [nestBy];
                     } else {
                         if (!Array.isArray(nestBy)) { throw 'nestBy variable must be a string, function, or array of strings or functions'; }
-                        prelim = this.nestPrelim(nestBy);
+                        this.nestByArray = nestBy;
                     }
+                    prelim = this.nestPrelim(this.nestByArray);
                 }
                 if ( nestType === 'object' ){
                     return prelim
@@ -168,20 +190,22 @@ var D3Charts = (function(){
             initializeCharts(container, index){
                 console.log(container);
                 var group = this;
-                d3.selectAll('.d3-chart.group-' + index)
+                d3.selectAll('.d3-chart.group-' + index) // select all `div.d3-chart`s that are associated
+                                                         // with the group by classname "group-" + index 
                     .each(function(){
-                        group.children.push(new Charts.ChartDiv(this, group));
+                        group.children.push(new Charts.ChartDiv(this, group)); // constructor provided in Charts
                     });
             }        
     }; // D3ChartGroup prototype ends here
     
+    /* PUBLIC API */
     window.D3Charts = { // need to specify window bc after transpiling all this will be wrapped in IIFEs
                         // and `return`ing won't get the export into window's global scope
         Init(){
             var groupDivs = document.querySelectorAll('.d3-group');
             for ( let i = 0; i < groupDivs.length; i++ ){
                 groupCollection.push(new D3ChartGroup(groupDivs[i], i));
-            }
+            }                                          // container, index 
             console.log(groupCollection);
             
         },

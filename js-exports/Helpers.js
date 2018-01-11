@@ -8,12 +8,13 @@ export const Helpers = (function(){
         return this.replace(/_/g,' ');
     };
 
-    DOMStringMap.prototype.convert = function() {
+    DOMStringMap.prototype.convert = function() { // will fail lte IE10
         var newObj = {};
         for ( var key in this ){
             if (this.hasOwnProperty(key)){
                 try {
-                    newObj[key] = JSON.parse(this[key]);
+                    newObj[key] = JSON.parse(this[key]); // if the value can be interpretted as JSON, it is
+                                                         // if it can't it isn't   
                 }
                 catch(err) {
                     newObj[key] = this[key];   
