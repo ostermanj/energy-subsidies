@@ -59,7 +59,7 @@ var D3Charts = (function(){
                 });
                 Promise.all(dataPromises).then(values => {
                     this.data = values[0];
-                    console.log('this.data',this.data);
+                    
                     this.dictionary = values[1];
                     this.summaries = this.summarizeData();
                 });
@@ -70,7 +70,7 @@ var D3Charts = (function(){
                              // the summaries provide average, max, min of all fields in the data at all levels of nesting. 
                              // the first (index 0) is one layer nested, the second is two, and so on.
                 
-               console.log(this.unnested, this.nestByArray);
+               
 
                var summaries = [];
                var nestByArray = this.nestByArray.map(a => a);
@@ -106,7 +106,7 @@ var D3Charts = (function(){
                     summaries.push(summarized);      
                     nestByArray.pop();
                 }
-                console.log(summaries);
+                
                 return summaries;
             }, 
             nestPrelim(nestByArray){
@@ -124,13 +124,13 @@ var D3Charts = (function(){
                             return cur(d);
                         });
                     }
-                    console.log(rtn.entries(this.unnested));
+                    
                     return rtn;
                 }, d3.nest());
             },
             returnNormalizedValues(values, start){
 
-                console.log(values);
+                
 
                 var newRowsArray = [[...values[0].slice(0,start), 'property','value']];
                 values.slice(1).forEach(row => {
@@ -142,7 +142,7 @@ var D3Charts = (function(){
                         }
                     });
                 });  
-                console.log('normalized', newRowsArray);              
+                              
                 return newRowsArray;
             },       
             returnKeyValues(values, nestBy, coerce = false, nestType = 'series', tabIndex = 0, normalizeColumnsStart = undefined){
@@ -164,7 +164,7 @@ var D3Charts = (function(){
             
                                                       // test for empty strings before coercing bc +'' => 0
                 }, {}));
-                console.log('unnested', unnested);
+                
                 if ( tabIndex === 0 ) {
                     this.unnested = unnested;
                 }           
@@ -188,7 +188,7 @@ var D3Charts = (function(){
                 }
             },
             initializeCharts(container, index){
-                console.log(container);
+                
                 var group = this;
                 d3.selectAll('.d3-chart.group-' + index) // select all `div.d3-chart`s that are associated
                                                          // with the group by classname "group-" + index 
@@ -206,12 +206,12 @@ var D3Charts = (function(){
             for ( let i = 0; i < groupDivs.length; i++ ){
                 groupCollection.push(new D3ChartGroup(groupDivs[i], i));
             }                                          // container, index 
-            console.log(groupCollection);
+            
             
         },
         collectAll:[],
         UpdateAll(variableY){
-            console.log(this.collectAll);
+            
             this.collectAll.forEach(each => {
                 each.update(variableY);
             });

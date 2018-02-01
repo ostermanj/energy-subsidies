@@ -65,7 +65,7 @@ export const Charts = (function(){
                        of arrays containing the series to be grouped
                        together. All strings must be double-quoted.`);
             }
-            console.log(seriesGroups);
+            
             return seriesGroups;
         }, // end groupSeries()
         addHeading(input){
@@ -115,7 +115,7 @@ export const Charts = (function(){
             }
         },
         label(key){ // TO DO: combine these into one method that returns object
-            console.log(key, this.dictionary);
+            
             return this.dictionary.find(each => each.key === key).label;
         },
         description(key){
@@ -138,7 +138,7 @@ export const Charts = (function(){
                                             // together. charts with the same parent are rendered in the same chartDiv
                                             // the data for each chart is already filtered to be only the series intended
                                             // for that chart
-        console.log(data);
+        
         this.parent = parent;
         this.config = parent.config;
         this.marginTop = +this.config.marginTop || this.defaultMargins.top;
@@ -199,28 +199,20 @@ export const Charts = (function(){
                                         // chart will render series as if from the beginning
                 this.parent.seriesCount = 0; 
             }
+            // TO DO : THIS HSOULD BE IN CHART PROTOTYPE
             this.potentialSeries = this.allSeries.selectAll('potential-series') // potential series bc the series
                                                                                 // may not have data for the current
                                                                                 // y variable
                 .data(() => { // append a g for potential series in the Charts data (seriesGroup)
                               // HERE IS WHERE NESTING BY Y VARIABLE WOULD COME INTO PLAY       
-                    console.log(this.data);
+                    
                    // return this.data.find(each => each.key === this.config.variableY).values;
                    return this.data;
                 }, d => d.key)
                 .enter().append('g')
                 .attr('class','potential-series');
 
-            this.eachSeries = this.potentialSeries.selectAll('each-series') // eachSeries is a potential series that does
-                                                                            // have data for the current y variable
-                .data(d => {
-                    console.log(d.values.find(each => each.key === this.config.variableY), this.config.variableY);
-                    return [d.values.find(each => each.key === this.config.variableY)];
-                }, d => d.values[0].series)
-                .enter().append('g')
-                .attr('class', () => {
-                    return 'each-series series-' + this.parent.seriesCount + ' color-' + this.parent.seriesCount++ % 4;
-                });
+            this.bindData();
 
             if ( this.config.stackSeries && this.config.stackSeries === true ){
                 this.prepareStacking(); // TO DO. SEPARATE STACKING FROM AREA. STACKING COULD APPLY TO MANY CHART TYPES
@@ -228,11 +220,27 @@ export const Charts = (function(){
 
             return container.node();
         },
+        bindData(){
+            // TO DO : THIS HSOULD BE IN CHART PROTOTYPE
+            var update = this.potentialSeries.selectAll('each-series')
+                .data(d => {
+                    return [d.values.find(each => each.key === this.config.variableY)];
+                    }, d => d.values[0].series);
+            update.exit().remove();
+            update.classed('update', true);
+
+            this.eachSeries = update.enter().append('g')
+                .merge(update)
+                .attr('class', () => {
+                    return 'each-series series-' + this.parent.seriesCount + ' color-' + this.parent.seriesCount++ % 4;
+                })
+                .classed('enter', true);
+        },
         update(variableY = this.config.variableY){
             this.config.variableY = variableY;
             this.prepareStacking();
             this.setScales();
-            this.addLines();
+            this.updateLines();
 
         },
         prepareStacking(){ // TO DO. SEPARATE STACKING FROM AREA. STACKING COULD APPLY TO MANY CHART TYPES
@@ -263,7 +271,7 @@ export const Charts = (function(){
                 this.stackData = this.stack(forStacking);
         },
         setScales(){ //SHOULD BE IN CHART PROTOTYPE // TO DO: SET SCALES FOR OTHER GROUP TYPES
-            console.log(this);
+            
             var d3Scale = {
                 time: d3.scaleTime(),
                 linear: d3.scaleLinear()
@@ -291,9 +299,9 @@ export const Charts = (function(){
             this.xValuesUnique = [];
 
             if ( this.config.stackSeries && this.config.stackSeries === true ){
-                console.log(this.stackData);
+                
                 var yValues = this.stackData.reduce((acc, cur) => {
-                    console.log(cur);
+                    
                     acc.push(...cur.reduce((acc1, cur1) => {
                         acc1.push(cur1[0], cur1[1]);
                         return acc1;
@@ -333,7 +341,14 @@ export const Charts = (function(){
                 }) 
                 .y(() => this.yScale(0));
 
-            var valueline = d3.line()
+            this.lines = this.eachSeries.append('path')
+                .attr('class','line')
+                .attr('d', (d) => {
+                    return zeroValueline(d.values);
+                });
+
+            this.updateLines();
+          /*  var valueline = d3.line()
                 .x(d => {
                     if ( this.xValuesUnique.indexOf(d[this.config.variableX]) === -1 ){
                         this.xValuesUnique.push(d[this.config.variableX]);
@@ -343,9 +358,9 @@ export const Charts = (function(){
                 .y((d) => {
                     
                     return this.yScale(d.value);
-                });
-            
-            if ( this.config.stackSeries && this.config.stackSeries === true ){
+                });*/
+          // TO DO : ADD BACK IN STACKED SERIES  
+           /* if ( this.config.stackSeries && this.config.stackSeries === true ){
                 
                 var area = d3.area()
                     .x(d => this.xScale(d3.timeParse(this.xTimeType)(d.data[this.config.variableX])))
@@ -376,28 +391,22 @@ export const Charts = (function(){
                     .attr('d', d => line(d));
 
                 
-            } else {
-                if ( this.isFirstRender ){
-                    
-                    this.lines = this.eachSeries.append('path')
-                        .attr('class','line')
-                        .attr('d', (d) => {
-                            console.log(d);
-                            return zeroValueline(d.values);
-                        })
-                        .transition().duration(500).delay(150)
+            } else { 
+                if ( this.isFirstRender ){ */
+                   
+                       /* .transition().duration(500).delay(150)
                         .attr('d', (d) => {
                             return valueline(d.values);
                         });
                         /*.on('end', (d,i,array) => {
-                            console.log(d,i,array);
+                            
                             if ( i === array.length - 1 ){
                                 
                                 this.addPoints();
                                 this.addLabels();
                             }
                         });*/   
-                } else {
+               /* } else {
                     d3.selectAll(this.lines.nodes())
                         .each((d,i,array) => {
                             if ( isNaN(d.values[0][this.config.variableY]) ){ // this a workaround for handling NAs
@@ -501,7 +510,25 @@ export const Charts = (function(){
                             },50);
                         });
                 }
-            }
+            }*/
+        },
+        updateLines(){
+            var valueline = d3.line()
+                .x(d => {
+                    if ( this.xValuesUnique.indexOf(d[this.config.variableX]) === -1 ){
+                        this.xValuesUnique.push(d[this.config.variableX]);
+                    }
+                    return this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX]));
+                }) 
+                .y((d) => {
+                    
+                    return this.yScale(d.value);
+                });
+
+            this.lines.transition().duration(500).delay(150)
+                .attr('d', (d) => {
+                    return valueline(d.values);
+                });
         },
         addXAxis(){ // could be in Chart prototype ?
             var xAxisPosition,
@@ -623,7 +650,7 @@ export const Charts = (function(){
 
             this.labels = this.labelGroups
                 .attr('transform', (d) => {
-                    console.log(d);
+                    
                     return `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1].value) + 3})`;
                 })
                 .append('a')
@@ -639,7 +666,7 @@ export const Charts = (function(){
                 .append('text') 
                 .attr('class', 'series-label')
                 .html((d) => {
-                    console.log(d);
+                    
                     return '<tspan x="0">' + this.parent.label(d.values[0].series).replace(/\\n/g,'</tspan><tspan x="0.5em" dy="1.2em">') + '</tspan>';
                 });
             
@@ -716,7 +743,7 @@ export const Charts = (function(){
                     if ( window.openTooltip ) {
                         window.openTooltip.hide();
                     }
-                   console.log(d3.select(array[i].parentNode).attr('class'));
+                   
                     var klass = d3.select(array[i].parentNode).attr('class').match(/color-\d/)[0]; // get the color class of the parent g
                         this.tooltip.attr('class', this.tooltip.attr('class') + ' ' + klass);
                         var prefix = '';
@@ -739,7 +766,7 @@ export const Charts = (function(){
                 
             }
             function mouseout(){
-                console.log('mouseout');
+                
                 this.tooltip.attr('class', this.tooltip.attr('class').replace(/ color-\d/g, ''));
                 this.tooltip.html('');
                 this.tooltip.hide();
@@ -755,7 +782,7 @@ export const Charts = (function(){
                 .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
                 .attr('cy', d => this.yScale(d[this.config.variableY]))
                 .on('mouseover', (d,i,array) => {
-                    console.log(array[i]);
+                    
                     array[i].focus();
                 })
                 .on('focus', (d,i,array) => {
@@ -769,7 +796,7 @@ export const Charts = (function(){
                 })
                 .on('click', this.bringToTop)
                 .on('keyup', (d,i,array) => {
-                    console.log(d3.event);
+                    
                     if (d3.event.keyCode === 13 ){
                         
                         this.bringToTop.call(array[i]);
@@ -782,9 +809,9 @@ export const Charts = (function(){
 
         },
         bringToTop(){
-            console.log(this);
+            
             if ( this.parentNode !== this.parentNode.parentNode.lastChild ){
-                console.log('click', this);
+                
                 d3.select(this.parentNode).moveToFront();
                 this.focus();
             }
