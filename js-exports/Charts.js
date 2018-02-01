@@ -340,12 +340,17 @@ export const Charts = (function(){
                     return this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX]));
                 }) 
                 .y(() => this.yScale(0));
+            var lines = this.eachSeries.selectAll('path')
+                .data(d => [d]);
+                
 
-            this.lines = this.eachSeries.append('path')
+            console.log(lines);
+            this.lines = lines.enter().append('path')
                 .attr('class','line')
                 .attr('d', (d) => {
                     return zeroValueline(d.values);
-                });
+                })
+                .merge(lines);
 
             this.updateLines();
           /*  var valueline = d3.line()
