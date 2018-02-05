@@ -154,10 +154,11 @@ export const Charts = (function(){
         this.yScaleType = this.config.yScaleType || 'linear';
         this.xTimeType = this.config.xTimeType || '%Y';
         this.scaleBy = this.config.scaleBy || this.config.variableY;
-        this.isFirstRender = true;
+      //  this.isFirstRender = true;
         this.setScales(); // //SHOULD BE IN CHART PROTOTYPE 
         this.setTooltips();
         this.addLines();
+        this.addLabels();
         this.addPoints();
         this.addXAxis();
         this.addYAxis();
@@ -652,7 +653,7 @@ export const Charts = (function(){
         },
         addLabels(){
 
-            var labelTooltip = d3.tip()
+         /*   var labelTooltip = d3.tip()
                 .attr("class", "d3-tip label-tip")
                 .direction('n')
                 .offset([-4, 12]);
@@ -665,17 +666,25 @@ export const Charts = (function(){
                 labelTooltip.html(this.parent.description(d.key));
                 labelTooltip.show();
                 window.openTooltip = labelTooltip;
-            }
+            } */
 
-            this.labelGroups = this.eachSeries
-                .append('g');
+           /* this.labelGroups = this.eachSeries
+                .append('g'); */
 
-            this.labels = this.labelGroups
+            var labels = this.eachSeries.selectAll('a.label-anchor')
+                .data(d => [d], d => d.values[0].series + '-label');
+
+            labels.transition().duration(500)
                 .attr('transform', (d) => {
-                    
+                    return `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1].value) + 3})`;
+                });
+
+            var newLabels = labels.enter().append('a')
+                .style('opacity', 0)
+                .attr('transform', (d) => {
                     return `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1].value) + 3})`;
                 })
-                .append('a')
+                .attr('class','label-anchor')
                 .attr('title','click to bring to front')
                 .attr('xlink:href','#')
                 .attr('tabindex',-1)
@@ -684,15 +693,22 @@ export const Charts = (function(){
                 .on('click', (d,i,array) => {
                     d3.event.preventDefault();
                     this.bringToTop.call(array[i].parentNode); 
-                })
-                .append('text') 
+                });
+            
+
+            newLabels.append('text') 
                 .attr('class', 'series-label')
                 .html((d) => {
                     
                     return '<tspan x="0">' + this.parent.label(d.values[0].series).replace(/\\n/g,'</tspan><tspan x="0.5em" dy="1.2em">') + '</tspan>';
                 });
+
+            newLabels.transition().duration(500).delay(650)
+                .style('opacity',1);
             
-            this.labels.each((d, i, array) => {
+            this.labels = newLabels.merge(labels);
+            
+        /*    this.labels.each((d, i, array) => {
                 if ( this.parent.description(d.key) !== undefined && this.parent.description(d.key) !== ''){
                     d3.select(array[i].parentNode)
                         .attr('tabindex',0)
@@ -715,8 +731,8 @@ export const Charts = (function(){
                             return d3.select(this).html() + '<tspan dy="-0.4em" dx="0.2em" class="info-mark">?</tspan>'; 
                         });
                 }
-            });
-            this.isFirstRender = false;
+            });*/
+           // this.isFirstRender = false;
             
 
             this.relaxLabels();
@@ -729,7 +745,7 @@ export const Charts = (function(){
                 again = false;
 
             this.labels.each((d,i,array1) => {
-
+console.log(array1);
                 var a = array1[i],
                     $a = d3.select(a),
                     yA = $a.attr('y'),
