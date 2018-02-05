@@ -47,15 +47,7 @@ $serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
         stroke: white;
         cursor: pointer;
     }
-    .each-series {
-        * {
-            opacity: 1;
-            transition: opacity 0.5s linear;
-        }
-        .is-not-a-number {
-            opacity: 0;
-        }
-    }
+    
     .color-0 {
         .line, &.line {
             stroke: $blue;

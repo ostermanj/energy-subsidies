@@ -59,7 +59,7 @@ var D3Charts = (function(){
                 });
                 Promise.all(dataPromises).then(values => {
                     this.data = values[0];
-                    
+                    console.log(this.data);
                     this.dictionary = values[1];
                     this.summaries = this.summarizeData();
                 });

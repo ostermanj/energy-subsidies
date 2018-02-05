@@ -138,7 +138,7 @@ export const Charts = (function(){
                                             // together. charts with the same parent are rendered in the same chartDiv
                                             // the data for each chart is already filtered to be only the series intended
                                             // for that chart
-        
+        console.log(data); 
         this.parent = parent;
         this.config = parent.config;
         this.marginTop = +this.config.marginTop || this.defaultMargins.top;
@@ -158,7 +158,7 @@ export const Charts = (function(){
         this.setScales(); // //SHOULD BE IN CHART PROTOTYPE 
         this.setTooltips();
         this.addLines();
-      //  this.addPoints();
+        this.addPoints();
         this.addXAxis();
         this.addYAxis();
         
@@ -222,25 +222,38 @@ export const Charts = (function(){
         },
         bindData(){
             // TO DO : THIS HSOULD BE IN CHART PROTOTYPE
-            var update = this.potentialSeries.selectAll('each-series')
+            var update = this.potentialSeries.selectAll('g.each-series')
                 .data(d => {
-                    return [d.values.find(each => each.key === this.config.variableY)];
-                    }, d => d.values[0].series);
-            update.exit().remove();
+                    var rtn = d.values.find(each => each.key === this.config.variableY);
+                    return rtn !== undefined ? [rtn] : []; // need to acct for possibility
+                                                           // that the series is absent given the 
+                                                           // config.variableY. if find() returns
+                                                           // undefined, data should be empty array
+                    }, d => {
+                        console.log(d);
+                        return d.values[0].series; 
+                    });
+            console.log(update);
+            update.exit()
+                .transition().duration(500)
+                .style('opacity', 0)
+                .remove();
+
             update.classed('update', true);
 
             this.eachSeries = update.enter().append('g')
                 .merge(update)
-                .attr('class', () => {
-                    return 'each-series series-' + this.parent.seriesCount + ' color-' + this.parent.seriesCount++ % 4;
+                .attr('class', d => {
+                    return d.values[0].series + ' each-series series-' + this.parent.seriesCount + ' color-' + this.parent.seriesCount++ % 4;
                 })
                 .classed('enter', true);
         },
         update(variableY = this.config.variableY){
             this.config.variableY = variableY;
-            this.prepareStacking();
             this.setScales();
-            this.updateLines();
+            this.bindData();
+            this.addLines();
+            this.addPoints();
 
         },
         prepareStacking(){ // TO DO. SEPARATE STACKING FROM AREA. STACKING COULD APPLY TO MANY CHART TYPES
@@ -287,8 +300,12 @@ export const Charts = (function(){
                 xMaxes.push(this.parent.parent.summaries[1][this.config.category][each.key].x.max);
                 xMins.push(this.parent.parent.summaries[1][this.config.category][each.key].x.min);
                 yVariables.forEach(yVar => {
-                    yMaxes.push(this.parent.parent.summaries[0][this.config.category][each.key][yVar].y.max);
-                    yMins.push(this.parent.parent.summaries[0][this.config.category][each.key][yVar].y.min);
+                    if ( this.parent.parent.summaries[0][this.config.category][each.key][yVar] !== undefined ){  // need to acct for poss
+                                                                                                                 // that the yVar does not exist in 
+                                                                                                                 // the specified series
+                        yMaxes.push(this.parent.parent.summaries[0][this.config.category][each.key][yVar].y.max);
+                        yMins.push(this.parent.parent.summaries[0][this.config.category][each.key][yVar].y.min);
+                    }
                 });
             });
 
@@ -742,9 +759,60 @@ export const Charts = (function(){
             });
         },
         addPoints(){
-            
-            function mouseover(d,i,array){
-               
+            // existing
+            var points = this.eachSeries.selectAll('circle.data-point')
+                .data(d => d.values, d => {
+                    console.log(d);
+                    return d.series + '-' + d[this.config.variableX];
+                });
+
+            // update existing
+            points.transition().duration(500).delay(150)
+                .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
+                .attr('cy', d => this.yScale(d.value));
+
+
+            var enter = points.enter();
+
+            enter.append('circle')
+                .attr('tabindex',0)
+                .attr('focusable', true)
+                .attr('opacity', 0)
+                .attr('class', 'data-point')
+                .attr('r', '4')
+                .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
+                .attr('cy', d => this.yScale(d.value))
+              /*  .on('mouseover', (d,i,array) => {
+                    array[i].focus();
+                })
+                .on('focus', (d,i,array) => {
+                    mouseover.call(this,d,i,array);
+                })
+                .on('mouseout', (d,i,array) => {
+                    array[i].blur();
+                })
+                .on('blur', () => {
+                    mouseout.call(this);
+                })
+                .on('click', this.bringToTop)
+                .on('keyup', (d,i,array) => {
+                    
+                    if (d3.event.keyCode === 13 ){
+                        
+                        this.bringToTop.call(array[i]);
+                    }
+                })
+                .call(this.tooltip)*/
+                .transition().duration(500).delay(650)
+                .attr('opacity', 1);
+
+            this.points = enter.merge(points);
+                
+
+                
+
+/*            function mouseover(d,i,array){
+
                     if ( window.openTooltip ) {
                         window.openTooltip.hide();
                     }
@@ -775,41 +843,7 @@ export const Charts = (function(){
                 this.tooltip.attr('class', this.tooltip.attr('class').replace(/ color-\d/g, ''));
                 this.tooltip.html('');
                 this.tooltip.hide();
-            }
-            this.points = this.eachSeries.selectAll('points')
-                .data(d => d.values, d => d.key)
-                .enter().append('circle')
-                .attr('tabindex',0)
-                .attr('focusable', true)
-                .attr('opacity', 0)
-                .attr('class', 'data-point')
-                .attr('r', '4')
-                .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
-                .attr('cy', d => this.yScale(d[this.config.variableY]))
-                .on('mouseover', (d,i,array) => {
-                    
-                    array[i].focus();
-                })
-                .on('focus', (d,i,array) => {
-                    mouseover.call(this,d,i,array);
-                })
-                .on('mouseout', (d,i,array) => {
-                    array[i].blur();
-                })
-                .on('blur', () => {
-                    mouseout.call(this);
-                })
-                .on('click', this.bringToTop)
-                .on('keyup', (d,i,array) => {
-                    
-                    if (d3.event.keyCode === 13 ){
-                        
-                        this.bringToTop.call(array[i]);
-                    }
-                })
-                .call(this.tooltip)
-                .transition().duration(500)
-                .attr('opacity', 1);
+            }*/
             
 
         },

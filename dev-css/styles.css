@@ -31,11 +31,6 @@
     stroke-width: 2px;
     stroke: white;
     cursor: pointer; }
-  .d3-chart .each-series * {
-    opacity: 1;
-    transition: opacity 0.5s linear; }
-  .d3-chart .each-series .is-not-a-number {
-    opacity: 0; }
   .d3-chart .color-0 .line, .d3-chart .color-0.line {
     stroke: #041937; }
   .d3-chart .color-0 .series-label, .d3-chart .color-0 .data-point {
