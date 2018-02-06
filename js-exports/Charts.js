@@ -255,6 +255,7 @@ export const Charts = (function(){
             this.bindData();
             this.addLines();
             this.addPoints();
+            this.adjustLabels();
 
         },
         prepareStacking(){ // TO DO. SEPARATE STACKING FROM AREA. STACKING COULD APPLY TO MANY CHART TYPES
@@ -651,6 +652,16 @@ export const Charts = (function(){
 
             
         },
+        adjustLabels(){
+            this.allSeries.selectAll('text.series-label')
+                .transition().duration(200)
+                .attr('y',0)
+                .on('end', (d,i,array) => {
+                    if ( i === array.length - 1 ){
+                        this.addLabels();
+                    }
+                });
+        },
         addLabels(){
 
          /*   var labelTooltip = d3.tip()
@@ -672,11 +683,23 @@ export const Charts = (function(){
                 .append('g'); */
 
             var labels = this.eachSeries.selectAll('a.label-anchor')
-                .data(d => [d], d => d.values[0].series + '-label');
+                .data(d => {
+                    console.log(d);
+                    return [d];
+                }, d => d.values[0].series + '-label');
 
-            labels.transition().duration(500)
-                .attr('transform', (d) => {
+
+
+            this.allSeries.selectAll('a.label-anchor')
+                .transition().duration(500)
+                .attr('transform', (d,i) => {
+                    console.log(d,i);
                     return `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1].value) + 3})`;
+                })
+                .on('end', (d,i,array) => {
+                    if ( i === array.length - 1 ){
+                        this.relaxLabels(); // do i need additional time for the entering ones to finish? gate?
+                    }
                 });
 
             var newLabels = labels.enter().append('a')
@@ -689,7 +712,6 @@ export const Charts = (function(){
                 .attr('xlink:href','#')
                 .attr('tabindex',-1)
                 .attr('focusable',false)
-                .attr('y', 0)
                 .on('click', (d,i,array) => {
                     d3.event.preventDefault();
                     this.bringToTop.call(array[i].parentNode); 
@@ -703,10 +725,11 @@ export const Charts = (function(){
                     return '<tspan x="0">' + this.parent.label(d.values[0].series).replace(/\\n/g,'</tspan><tspan x="0.5em" dy="1.2em">') + '</tspan>';
                 });
 
-            newLabels.transition().duration(500).delay(650)
+            newLabels.transition().duration(500)
                 .style('opacity',1);
             
-            this.labels = newLabels.merge(labels);
+            this.labels = newLabels.merge(labels).selectAll('text.series-label');
+            
             
         /*    this.labels.each((d, i, array) => {
                 if ( this.parent.description(d.key) !== undefined && this.parent.description(d.key) !== ''){
@@ -734,8 +757,11 @@ export const Charts = (function(){
             });*/
            // this.isFirstRender = false;
             
-
-            this.relaxLabels();
+            if ( labels.nodes().length === 0 ){ // ie there are no exiting labels (first render or all have
+                                                // exited). if there are existing labels, relaxLabels is called
+                                                // on 'end' of their transition above.
+                this.relaxLabels();
+            }
            
            
         },
