@@ -138,7 +138,7 @@ export const Charts = (function(){
                                             // together. charts with the same parent are rendered in the same chartDiv
                                             // the data for each chart is already filtered to be only the series intended
                                             // for that chart
-        console.log(data); 
+        
         this.parent = parent;
         this.config = parent.config;
         this.marginTop = +this.config.marginTop || this.defaultMargins.top;
@@ -231,10 +231,10 @@ export const Charts = (function(){
                                                            // config.variableY. if find() returns
                                                            // undefined, data should be empty array
                     }, d => {
-                        console.log(d);
+                        
                         return d.values[0].series; 
                     });
-            console.log(update);
+            
             update.exit()
                 .transition().duration(500)
                 .style('opacity', 0)
@@ -287,16 +287,26 @@ export const Charts = (function(){
         },
         setScales(){ //SHOULD BE IN CHART PROTOTYPE // TO DO: SET SCALES FOR OTHER GROUP TYPES
             
+
+
             var d3Scale = {
                 time: d3.scaleTime(),
                 linear: d3.scaleLinear()
                 // TO DO: add all scale types.
             };
-            var xMaxes = [], xMins = [], yMaxes = [], yMins = [];
+            var xMaxes = [], xMins = [], yMaxes = [], yMins = [], yVariables;
+            console.log(this.scaleBy,this.scaleBy !== undefined,this.scaleBy !== 'all',Array.isArray(this.scaleBy) !== true );
+            if ( this.scaleBy !== undefined && this.scaleBy !== 'all' && Array.isArray(this.scaleBy) !== true && typeof this.scaleBy !== 'string' ) {
+                console.log('Invalid data-scale-by configuration. Must be string or array of y variable(s).');
+                this.scaleBy = undefined;
+            }
+            if ( this.scaleBy === 'all') {
+                yVariables = this.parent.parent.properties;
+            } else {
+                yVariables = Array.isArray(this.scaleBy) ? this.scaleBy : Array.isArray(this.config.variableY) ? this.config.variableY : [this.config.variableY];
+            }
 
-            var yVariables = Array.isArray(this.scaleBy) ? this.scaleBy : Array.isArray(this.config.variableY) ? this.config.variableY : [this.config.variableY];
-
-            
+            console.log(yVariables, this.parent.parent.properties);
 
             this.data.forEach(each => {
                 xMaxes.push(this.parent.parent.summaries[1][this.config.category][each.key].x.max);
@@ -363,7 +373,7 @@ export const Charts = (function(){
                 .data(d => [d]);
                 
 
-            console.log(lines);
+            
             this.lines = lines.enter().append('path')
                 .attr('class','line')
                 .attr('d', (d) => {
@@ -684,7 +694,7 @@ export const Charts = (function(){
 
             var labels = this.eachSeries.selectAll('a.label-anchor')
                 .data(d => {
-                    console.log(d);
+                    
                     return [d];
                 }, d => d.values[0].series + '-label');
 
@@ -692,8 +702,8 @@ export const Charts = (function(){
 
             this.allSeries.selectAll('a.label-anchor')
                 .transition().duration(500)
-                .attr('transform', (d,i) => {
-                    console.log(d,i);
+                .attr('transform', (d) => {
+                    
                     return `translate(${this.width + 8}, ${this.yScale(d.values[d.values.length - 1].value) + 3})`;
                 })
                 .on('end', (d,i,array) => {
@@ -771,7 +781,7 @@ export const Charts = (function(){
                 again = false;
 
             this.labels.each((d,i,array1) => {
-console.log(array1);
+
                 var a = array1[i],
                     $a = d3.select(a),
                     yA = $a.attr('y'),
@@ -804,7 +814,7 @@ console.log(array1);
             // existing
             var points = this.eachSeries.selectAll('circle.data-point')
                 .data(d => d.values, d => {
-                    console.log(d);
+                    
                     return d.series + '-' + d[this.config.variableX];
                 });
 

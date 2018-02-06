@@ -28,6 +28,7 @@ var D3Charts = (function(){
         this.dataPromises = this.returnDataPromises();
         this.children = []; 
         this.collectAll = [];
+        this.properties = [];
         this.dataPromises.then(() => { // when the data promises resolve, charts are initialized
             this.initializeCharts(container, index);
         });
@@ -154,8 +155,10 @@ var D3Charts = (function(){
                 if ( normalizeColumnsStart !== undefined && tabIndex === 0 )  {
                     values = this.returnNormalizedValues(values, normalizeColumnsStart);
                 } 
-                var unnested = values.slice(1).map(row => row.reduce(function(acc, cur, i) { 
-
+                var unnested = values.slice(1).map(row => row.reduce((acc, cur, i) => { 
+                if ( values[0][i] === 'property' && this.properties.indexOf(cur) === -1 ){
+                    this.properties.push(cur); // use this array in the setScales fn of chart.js
+                }
                 // 1. params: total, currentValue, currentIndex[, arr]
                 // 3. // acc is an object , key is corresponding value from row 0, value is current value of array
             
