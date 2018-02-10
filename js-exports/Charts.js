@@ -254,6 +254,7 @@ export const Charts = (function(){
             this.setScales();
             this.bindData();
             this.addLines();
+            this.adjustYAxis();
             this.addPoints();
             this.adjustLabels();
 
@@ -587,19 +588,37 @@ export const Charts = (function(){
                 .attr('class', 'axis x-axis')
                 .call(axis);
         },
-        addYAxis(){
-            /* axis */
+        adjustYAxis(){
             this.yAxisGroup
-              .attr('class', () => 'axis y-axis ')
-              .call(d3.axisLeft(this.yScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(5));
+                .transition().duration(500)
+                .call(d3.axisLeft(this.yScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(5))
+                .on('end', () => {
+                    this.markZero();
+                }); 
+                // to do make this DRYer (repeated below) and programmatic
 
+            //this.markZero();
+
+        },
+        markZero(){ // if zero is not the first tick mark, mark it with bold type
             this.yAxisGroup
                 .selectAll('.tick')
                 .each((d,i,array) => {
                     d3.select(array[i])
-                        .classed('zero', ( d === 0 && i !== 0 && this.yMin < 0 ));
+                        .classed('zero', d => {
+                            console.log(d,i,this.yMin);
+                            return ( d === 0 && i !== 0 && this.yMin < 0 );
+                        });
                 });
+        },
+        addYAxis(){
+            /* axis */
+            this.yAxisGroup
+              .attr('class', 'axis y-axis')
+              .call(d3.axisLeft(this.yScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1).ticks(5));
+
             
+            this.markZero();
 
 
             /* labels */
