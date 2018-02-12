@@ -119,6 +119,7 @@ export const Charts = (function(){
             return this.dictionary.find(each => each.key === key).label;
         },
         description(key){
+            console.log(this.dictionary, key);
             return this.dictionary.find(each => each.key === key).description;
         },
         unitsDescription(key){
@@ -693,7 +694,7 @@ export const Charts = (function(){
         },
         addLabels(){
 
-         /*   var labelTooltip = d3.tip()
+            var labelTooltip = d3.tip()
                 .attr("class", "d3-tip label-tip")
                 .direction('n')
                 .offset([-4, 12]);
@@ -703,10 +704,10 @@ export const Charts = (function(){
                 if ( window.openTooltip ) {
                     window.openTooltip.hide();
                 }
-                labelTooltip.html(this.parent.description(d.key));
+                labelTooltip.html(this.parent.description(d.values[0].series));
                 labelTooltip.show();
                 window.openTooltip = labelTooltip;
-            } */
+            }
 
            /* this.labelGroups = this.eachSeries
                 .append('g'); */
@@ -760,8 +761,9 @@ export const Charts = (function(){
             this.labels = newLabels.merge(labels).selectAll('text.series-label');
             
             
-        /*    this.labels.each((d, i, array) => {
-                if ( this.parent.description(d.key) !== undefined && this.parent.description(d.key) !== ''){
+            this.labels.each((d, i, array) => {
+                console.log(d);
+                if ( this.parent.description(d.values[0].series) !== undefined && this.parent.description(d.values[0].series) !== ''){
                     d3.select(array[i].parentNode)
                         .attr('tabindex',0)
                         .attr('focusable',true)
@@ -783,7 +785,7 @@ export const Charts = (function(){
                             return d3.select(this).html() + '<tspan dy="-0.4em" dx="0.2em" class="info-mark">?</tspan>'; 
                         });
                 }
-            });*/
+            });
            // this.isFirstRender = false;
             
             if ( labels.nodes().length === 0 ){ // ie there are no exiting labels (first render or all have

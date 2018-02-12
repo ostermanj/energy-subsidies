@@ -9,7 +9,7 @@ data but can also specify their own.
 
 groups are collected in groupCollection array 
 
-*/
+*/ 
 import { reflect, arrayFind, SVGInnerHTML, SVGFocus } from '../js-vendor/polyfills';
 import { Helpers } from '../js-exports/Helpers';
 import { Charts } from '../js-exports/Charts';
