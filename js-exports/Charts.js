@@ -753,6 +753,31 @@ export const Charts = (function(){
                 .html((d) => {
                     
                     return '<tspan x="0">' + this.parent.label(d.values[0].series).replace(/\\n/g,'</tspan><tspan x="0.5em" dy="1.2em">') + '</tspan>';
+                })
+                .each((d, i, array) => {
+                    console.log(d);
+                    if ( this.parent.description(d.values[0].series) !== undefined && this.parent.description(d.values[0].series) !== ''){
+                        d3.select(array[i].parentNode)
+                            .attr('tabindex',0)
+                            .attr('focusable',true)
+                            .classed('has-tooltip', true)
+                            .on('mouseover', (d,i,array) => {
+                                array[i].focus();
+                            })
+                            .on('focus', d => {
+                                mouseover.call(this,d);
+                            })
+                            .on('mouseout', (d,i,array) => {
+                                array[i].blur();
+                            })
+                            .on('blur', labelTooltip.hide)
+                            .call(labelTooltip);
+                            
+                        d3.select(array[i])
+                            .html(function(){
+                                return d3.select(this).html() + '<tspan dy="-0.4em" dx="0.2em" class="info-mark">?</tspan>'; 
+                            });
+                    }
                 });
 
             newLabels.transition().duration(500)
@@ -761,7 +786,7 @@ export const Charts = (function(){
             this.labels = newLabels.merge(labels).selectAll('text.series-label');
             
             
-            this.labels.each((d, i, array) => {
+         /*   newLabels.each((d, i, array) => {
                 console.log(d);
                 if ( this.parent.description(d.values[0].series) !== undefined && this.parent.description(d.values[0].series) !== ''){
                     d3.select(array[i].parentNode)
@@ -785,7 +810,7 @@ export const Charts = (function(){
                             return d3.select(this).html() + '<tspan dy="-0.4em" dx="0.2em" class="info-mark">?</tspan>'; 
                         });
                 }
-            });
+            });*/
            // this.isFirstRender = false;
             
             if ( labels.nodes().length === 0 ){ // ie there are no exiting labels (first render or all have
