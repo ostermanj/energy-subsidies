@@ -160,7 +160,7 @@ export const Charts = (function(){
         this.setTooltips();
         this.addLines();
         this.addLabels();
-        this.addPoints();
+        //this.addPoints();
         this.addXAxis();
         this.addYAxis();
         
@@ -224,7 +224,7 @@ export const Charts = (function(){
         },
         bindData(){
             // TO DO : THIS HSOULD BE IN CHART PROTOTYPE
-            var update = this.potentialSeries.selectAll('g.each-series')
+            var eachSeries = this.potentialSeries.selectAll('g.each-series')
                 .data(d => {
                     var rtn = d.values.find(each => each.key === this.config.variableY);
                     return rtn !== undefined ? [rtn] : []; // need to acct for possibility
@@ -232,23 +232,28 @@ export const Charts = (function(){
                                                            // config.variableY. if find() returns
                                                            // undefined, data should be empty array
                     }, d => {
-                        
+                        console.log(d.values[0].series); 
                         return d.values[0].series; 
                     });
             
-            update.exit()
+            // update existing
+            eachSeries
+                .classed('enter', false)
+                .classed('update', true);
+
+            // clear exiting
+            eachSeries.exit()
                 .transition().duration(500)
                 .style('opacity', 0)
                 .remove();
 
-            update.classed('update', true);
-
-            this.eachSeries = update.enter().append('g')
-                .merge(update)
+            var entering = eachSeries.enter().append('g')
                 .attr('class', d => {
                     return d.values[0].series + ' each-series series-' + this.parent.seriesCount + ' color-' + this.parent.seriesCount++ % 4;
                 })
                 .classed('enter', true);
+                
+            this.eachSeries = entering.merge(eachSeries);
         },
         update(variableY = this.config.variableY){
             this.config.variableY = variableY;
@@ -256,7 +261,7 @@ export const Charts = (function(){
             this.bindData();
             this.addLines();
             this.adjustYAxis();
-            this.addPoints();
+            //this.addPoints();
             this.adjustLabels();
 
         },
@@ -859,8 +864,11 @@ export const Charts = (function(){
         addPoints(){
             // existing
             var points = this.eachSeries.selectAll('circle.data-point')
-                .data(d => d.values, d => {
-                    
+                .data(d => {
+                    //console.log(d);
+                    return d.values;
+                }, d => {
+                    console.log(d.series + '-' + d[this.config.variableX]);
                     return d.series + '-' + d[this.config.variableX];
                 });
 
@@ -869,6 +877,7 @@ export const Charts = (function(){
                 .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
                 .attr('cy', d => this.yScale(d.value));
 
+            points.exit().remove();
 
             var enter = points.enter();
 
@@ -880,14 +889,14 @@ export const Charts = (function(){
                 .attr('r', '4')
                 .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
                 .attr('cy', d => this.yScale(d.value))
-              /*  .on('mouseover', (d,i,array) => {
-                    array[i].focus();
+                .on('mouseover', (d,i,array) => {
+                    mouseover.call(this,d,i,array);
                 })
                 .on('focus', (d,i,array) => {
                     mouseover.call(this,d,i,array);
                 })
-                .on('mouseout', (d,i,array) => {
-                    array[i].blur();
+                .on('mouseout', () => {
+                    mouseout.call(this);
                 })
                 .on('blur', () => {
                     mouseout.call(this);
@@ -900,7 +909,7 @@ export const Charts = (function(){
                         this.bringToTop.call(array[i]);
                     }
                 })
-                .call(this.tooltip)*/
+                .call(this.tooltip)
                 .transition().duration(500).delay(650)
                 .attr('opacity', 1);
 
@@ -909,8 +918,8 @@ export const Charts = (function(){
 
                 
 
-/*            function mouseover(d,i,array){
-
+            function mouseover(d,i,array){
+                    console.log(d);
                     if ( window.openTooltip ) {
                         window.openTooltip.hide();
                     }
@@ -922,15 +931,16 @@ export const Charts = (function(){
                         if ( this.parent.units(d.series) && this.parent.units(d.series)[0] === '$' ){
                             prefix = '$'; // TO DO:  handle other prefixes
                         }
-                        var html = '<strong>' + this.parent.tipText(d.series) + '</strong> (' + d.year + ')<br />' + prefix + d3.format(',')(d[this.config.variableY]);
+                        var html = '<strong>' + this.parent.tipText(d.series) + '</strong> (' + d.year + ')<br />' + prefix + d3.format(',')(d.value);
                         if ( this.parent.units(d.series) && this.parent.units(d.series) !== ''){
                             suffix = this.parent.units(d.series).replace('$','');
                             html += ' ' + suffix;
                         }
-                        var cum = this.config.variableY.replace('_value','_cum');
+                        // TO DO: HANDLE THE CUMULATVE VALUES 
+                      /*  var cum = this.config.variableY.replace('_value','_cum');
                         if ( d[cum] !== '' ){
                             html += '<br />(' + prefix + d3.format(',')(d[cum]) + suffix + ' cumulative)';
-                        }
+                        }*/
                         this.tooltip.html(html);
                         this.tooltip.show();
                     window.openTooltip = this.tooltip;
@@ -941,7 +951,7 @@ export const Charts = (function(){
                 this.tooltip.attr('class', this.tooltip.attr('class').replace(/ color-\d/g, ''));
                 this.tooltip.html('');
                 this.tooltip.hide();
-            }*/
+            }
             
 
         },

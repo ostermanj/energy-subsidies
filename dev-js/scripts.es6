@@ -16,7 +16,7 @@ import { Charts } from '../js-exports/Charts';
 import { d3Tip } from '../js-vendor/d3-tip';
 
 var D3Charts = (function(){ 
-
+ 
 "use strict";  
      
     var groupCollection = [];

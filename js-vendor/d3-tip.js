@@ -251,6 +251,7 @@ export const d3Tip = (function(){
     }
 
     function getSVGNode(el) {
+      console.log(el);
       el = el.node()
       if(el.tagName.toLowerCase() === 'svg')
         return el
