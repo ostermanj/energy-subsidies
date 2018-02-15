@@ -24,6 +24,9 @@ export const d3Tip = (function(){
 
     function tip(vis) {
       svg = getSVGNode(vis)
+      if (!svg){ // HT https://github.com/Caged/d3-tip/pull/96/files
+        return;
+      }
       point = svg.createSVGPoint()
       document.body.appendChild(node)
     }
@@ -253,6 +256,9 @@ export const d3Tip = (function(){
     function getSVGNode(el) {
       console.log(el);
       el = el.node()
+      if (!el) { // HT https://github.com/Caged/d3-tip/pull/96/files
+        return;
+      }
       if(el.tagName.toLowerCase() === 'svg')
         return el
 

@@ -160,7 +160,7 @@ export const Charts = (function(){
         this.setTooltips();
         this.addLines();
         this.addLabels();
-        //this.addPoints();
+        this.addPoints();
         this.addXAxis();
         this.addYAxis();
         
@@ -261,7 +261,7 @@ export const Charts = (function(){
             this.bindData();
             this.addLines();
             this.adjustYAxis();
-            //this.addPoints();
+            this.addPoints();
             this.adjustLabels();
 
         },
@@ -873,7 +873,10 @@ export const Charts = (function(){
                 });
 
             // update existing
-            points.transition().duration(500).delay(150)
+            points
+                .classed('enter', false)
+                .classed('update', true)
+                .transition().duration(500).delay(150)
                 .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
                 .attr('cy', d => this.yScale(d.value));
 
@@ -881,11 +884,12 @@ export const Charts = (function(){
 
             var enter = points.enter();
 
+
             enter.append('circle')
                 .attr('tabindex',0)
                 .attr('focusable', true)
                 .attr('opacity', 0)
-                .attr('class', 'data-point')
+                .attr('class', 'data-point enter')
                 .attr('r', '4')
                 .attr('cx', d => this.xScale(d3.timeParse(this.xTimeType)(d[this.config.variableX])))
                 .attr('cy', d => this.yScale(d.value))
@@ -914,10 +918,9 @@ export const Charts = (function(){
                 .attr('opacity', 1);
 
             this.points = enter.merge(points);
-                
 
+            console.log(this.points);
                 
-
             function mouseover(d,i,array){
                     console.log(d);
                     if ( window.openTooltip ) {
