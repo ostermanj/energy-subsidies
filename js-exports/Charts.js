@@ -209,10 +209,11 @@ export const Charts = (function(){
                               // HERE IS WHERE NESTING BY Y VARIABLE WOULD COME INTO PLAY       
                     
                    // return this.data.find(each => each.key === this.config.variableY).values;
+                   console.log(this.data);
                    return this.data;
                 }, d => d.key)
                 .enter().append('g')
-                .attr('class','potential-series');
+                .attr('class', d => 'potential-series ' + d.key + ' series-' + this.parent.seriesCount + ' color-' + this.parent.seriesCount++ % 4);
 
             this.bindData();
 
@@ -249,7 +250,7 @@ export const Charts = (function(){
 
             var entering = eachSeries.enter().append('g')
                 .attr('class', d => {
-                    return d.values[0].series + ' each-series series-' + this.parent.seriesCount + ' color-' + this.parent.seriesCount++ % 4;
+                    return d.values[0].series + ' each-series';
                 })
                 .classed('enter', true);
                 
