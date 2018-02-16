@@ -928,7 +928,7 @@ export const Charts = (function(){
                         window.openTooltip.hide();
                     }
                    
-                    var klass = d3.select(array[i].parentNode).attr('class').match(/color-\d/)[0]; // get the color class of the parent g
+                    var klass = d3.select(array[i].parentNode.parentNode).attr('class').match(/color-\d/)[0]; // get the color class of the parent g
                         this.tooltip.attr('class', this.tooltip.attr('class') + ' ' + klass);
                         var prefix = '';
                         var suffix = '';
