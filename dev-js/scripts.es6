@@ -205,6 +205,11 @@ var D3Charts = (function(){
     window.D3Charts = { // need to specify window bc after transpiling all this will be wrapped in IIFEs
                         // and `return`ing won't get the export into window's global scope
         Init(){
+
+            d3.request('https://api.zotero.org/groups/26940/items/top', function(xhr){
+                console.log(xhr.getResponseHeader('Total-Results'));
+            });
+
             var groupDivs = document.querySelectorAll('.d3-group');
             for ( let i = 0; i < groupDivs.length; i++ ){
                 groupCollection.push(new D3ChartGroup(groupDivs[i], i));
