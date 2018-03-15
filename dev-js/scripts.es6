@@ -107,7 +107,8 @@ var D3Charts = (function(){
                     }
                     return rtn;
                 }, d3.nest());
-            },       
+            },
+            // TO DO: SEPARATE KEY VALUES AND NESTING INTO SEPARATE FUNCTIONS       
             returnKeyValues(values, nestBy, coerce = false, nestType = 'series', tabIndex = 0){
             // this fn takes normalized data fetched as an array of rows and uses the values in the first row as keys for values in
             // subsequent rows
