@@ -20,7 +20,7 @@ var D3Charts = (function(){
 "use strict";  
      
     var groupCollection = [];
-    var D3ChartGroup = function(container, index){
+    var D3ChartGroup = function(container, index){ 
         this.container = container;
         this.index = index;
         this.config = container.dataset.convert(); // method provided in Helpers
@@ -145,7 +145,8 @@ var D3Charts = (function(){
                 });  
                               
                 return newRowsArray;
-            },       
+            },  
+            // TO DO: SEPARATE KEY VALUES AND NESTING INTO SEPARATE FUNCTIONS     
             returnKeyValues(values, nestBy, coerce = false, nestType = 'series', tabIndex = 0, normalizeColumnsStart = undefined){
             // this fn takes normalized data fetched as an array of rows and uses the values in the first row as keys for values in
             // subsequent rows
