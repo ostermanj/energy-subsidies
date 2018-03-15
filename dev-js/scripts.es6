@@ -206,8 +206,8 @@ var D3Charts = (function(){
                         // and `return`ing won't get the export into window's global scope
         Init(){
 
-            d3.request('https://api.zotero.org/groups/26940/items/top', function(xhr){
-                console.log(xhr.getResponseHeader('Total-Results'));
+            d3.request('https://api.zotero.org/groups/26940/items/top?limit=100', function(xhr){
+                console.log(JSON.parse(xhr.responseText));
             });
 
             var groupDivs = document.querySelectorAll('.d3-group');
@@ -215,7 +215,7 @@ var D3Charts = (function(){
                 groupCollection.push(new D3ChartGroup(groupDivs[i], i));
             }                                          // container, index 
             
-            
+             
         },
         collectAll:[],
         UpdateAll(variableY){
