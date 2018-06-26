@@ -116,21 +116,21 @@ export const Charts = (function(){
         },
         label(key){ // TO DO: combine these into one method that returns object
             
-            return this.dictionary.find(each => each.key === key).label;
+            return this.dictionary.find(each => each.key === key) !== undefined ? this.dictionary.find(each => each.key === key).label : '';
         },
         description(key){
             console.log(this.dictionary, key);
-            return this.dictionary.find(each => each.key === key).description;
+            return this.dictionary.find(each => each.key === key) !== undefined ? this.dictionary.find(each => each.key === key).description : '';
         },
         unitsDescription(key){
-            return this.dictionary.find(each => each.key === key).units_description;
+            return this.dictionary.find(each => each.key === key) !== undefined ? this.dictionary.find(each => each.key === key).units_description : '';
         },   
         units(key){
-            return this.dictionary.find(each => each.key === key).units;  
+            return this.dictionary.find(each => each.key === key) !== undefined ? this.dictionary.find(each => each.key === key).units : '';  
         },
         tipText(key){
             var str = this.dictionary.find(each => each.key === key).label.replace(/\\n/g,' ');
-            return str.charAt(0).toUpperCase() + str.slice(1);
+            return str !== undefined ? str.charAt(0).toUpperCase() + str.slice(1) : '';
         }
 
     }; // end LineChart.prototype
@@ -317,16 +317,22 @@ export const Charts = (function(){
             console.log(yVariables, this.parent.parent.properties);
 
             this.data.forEach(each => {
-                xMaxes.push(this.parent.parent.summaries[1][this.config.category][each.key].x.max);
-                xMins.push(this.parent.parent.summaries[1][this.config.category][each.key].x.min);
-                yVariables.forEach(yVar => {
-                    if ( this.parent.parent.summaries[0][this.config.category][each.key][yVar] !== undefined ){  // need to acct for poss
-                                                                                                                 // that the yVar does not exist in 
-                                                                                                                 // the specified series
-                        yMaxes.push(this.parent.parent.summaries[0][this.config.category][each.key][yVar].y.max);
-                        yMins.push(this.parent.parent.summaries[0][this.config.category][each.key][yVar].y.min);
-                    }
-                });
+                console.log(each, this);
+                xMaxes.push(this.parent.parent.summaries[this.parent.parent.summaries.length - 2][this.config.category][each.key].x.max);
+                xMins.push(this.parent.parent.summaries[this.parent.parent.summaries.length - 2][this.config.category][each.key].x.min);
+                if ( this.parent.parent.properties.length > 0 ){
+                    yVariables.forEach(yVar => {
+                        if ( this.parent.parent.summaries[0][this.config.category][each.key][yVar] !== undefined ){  // need to acct for poss
+                                                                                                                     // that the yVar does not exist in 
+                                                                                                                     // the specified series
+                            yMaxes.push(this.parent.parent.summaries[0][this.config.category][each.key][yVar].y.max);
+                            yMins.push(this.parent.parent.summaries[0][this.config.category][each.key][yVar].y.min);
+                        }
+                    });
+                } else  {
+                    yMaxes.push(this.parent.parent.summaries[0][this.config.category][each.key].y.max);
+                    yMins.push(this.parent.parent.summaries[0][this.config.category][each.key].y.min);
+                }
             });
 
             this.xMax = d3.max(xMaxes);
@@ -586,6 +592,7 @@ export const Charts = (function(){
                 xAxisOffset = this.marginBottom - 15;
                 axisType = d3.axisBottom;
             }
+            console.log(xAxisPosition, xAxisOffset);
             var axis = axisType(this.xScale).tickSizeInner(4).tickSizeOuter(0).tickPadding(1);
             if ( this.xScaleType === 'time' ){
                 axis.tickValues(this.xValuesUnique.map(each => d3.timeParse(this.xTimeType)(each))); // TO DO: allow for other xAxis Adjustments
