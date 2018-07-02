@@ -601,6 +601,8 @@ export const Charts = (function(){
                 .attr('transform', 'translate(0,' + ( this.yScale(xAxisPosition) + xAxisOffset ) + ')') // not programatic placement of x-axis
                 .attr('class', 'axis x-axis')
                 .call(axis);
+
+            d3.select(this.xAxisGroup.selectAll('g.tick').nodes()[0]).classed('first-tick', true);
         },
         adjustYAxis(){
             this.yAxisGroup
