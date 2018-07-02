@@ -12,78 +12,40 @@
     <link rel="stylesheet" type="text/css" href="dev-css/styles.css" />
 </head>
 <body style="max-width: 728px;margin: 0 auto;">
-    
-    <div class="d3-group" data-sheet-id="15fQ2AUS5n9B5yV0sftvY7fCmrWkCQfyBrhBwxMkAxPU" data-normalize-columns-start="3" data-nest-by='["category","series","property"]' data-data-tab="Sheet1" data-dictionary-tab="dictionary" data-variable-y="stopGap" data-variable-x="year" data-type="line" data-svg-width="320" data-direct-label="true" >
-    </div>
-    <div class="d3-chart group-0" data-category="capacity" data-series-group='[["coal-total","nuclear-total","gas-total"]]' data-margin-right="85" data-reset-colors="true"></div>
-    <div class="d3-chart group-0" data-category="generation" data-series-group='[["coal","nuclear","gas"]]' data-margin-right="85" data-reset-colors="true"></div>
-    <div class="d3-chart group-0" data-category="death" data-series-group='"none"'></div>
-    <div class="d3-chart group-0" data-category="emissions" data-series-group='[["carbon"],["sulfur","nitrogen"]]' data-reset-scale='["carbon", "sulfur"]'></div>
-    <div class="d3-chart group-0" data-category="costs" data-series-group='"all"'></div>
-    <div class="d3-chart group-0" data-category="jobs" data-series-group='"none"'></div>
 
-    <!--
-    <div class="d3-chart group-0" data-category="generation" data-series-group='all'></div>
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia in quo libero ea. Eligendi quidem ducimus eaque. Nihil sapiente, qui ut vitae velit maxime aliquam, debitis, aliquid natus, nobis ullam.
-    </p>
-     <div class="d3-chart group-0" data-category="emissions" data-series-group='[["carbon"],["sulfur","nitrogen"]]' data-reset-scale='["carbon", "sulfur"]'></div>
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nam provident quis consequatur id beatae doloribus veniam eius molestiae, ducimus eum maxime totam reprehenderit, ipsa aperiam? Iste quaerat quam beatae autem!
-    </p>
-     <div class="d3-chart group-0" data-category="death" data-series-group='"none"'></div>
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quae sequi harum magni officia dignissimos doloribus nisi quibusdam quidem consectetur debitis aliquid itaque quaerat, praesentium! Rem maiores ea ullam vitae doloribus.
-    </p>
-     <div class="d3-chart group-0" data-category="price" data-series-group='[["total_price","lmp","uplift"]]' data-margin-right="75"></div>
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sed, nulla, itaque! Enim earum et magni possimus, ipsam labore itaque, ratione, delectus fugit ullam nostrum totam, aliquam veritatis repellendus! Recusandae, amet.
-    </p>
-     <div class="d3-chart group-0" data-category="benefits" data-series-group='[["total","end-user", "environmental","generator"]]' data-margin-right="75" data-x-axis-position="zero"></div>
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nesciunt nisi deserunt explicabo dolore reiciendis beatae ut laudantium delectus, est alias ipsa. Consequuntur excepturi tenetur nobis incidunt esse, molestias modi odit.
-    </p> 
     <p><strong>Settings</strong></p>
     <form id="forms">
         <div>
-            <input onchange="changeHandler()" id="profit" type="radio" name="type" value="profit" checked />
-            <label for="profit">Profit guarantee</label>
-            <input onchange="changeHandler()" id="cost" type="radio" name="type" value="cost" />
-            <label for="profit">Costs only</label>
+            <input id="stopGap" type="radio" name="target" value="stopGap" checked />
+            <label for="stopGap">Stop gap</label>
+            <input id="coalOnly" type="radio" name="target" value="coalOnly" />
+            <label for="coalOnly">Coal only</label>
+            <input id="nuclearOnly" type="radio" name="target" value="nuclearOnly" />
+            <label for="nuclearOnly">Nuclear only</label>
         </div>
+    </form>
+    
+    <div class="d3-group" data-sheet-id="15fQ2AUS5n9B5yV0sftvY7fCmrWkCQfyBrhBwxMkAxPU" data-normalize-columns-start="3" data-nest-by='["category","series","property"]' data-data-tab="Sheet1" data-dictionary-tab="dictionary" data-variable-y="stopGap" data-variable-x="year" data-type="line" data-svg-width="320" data-direct-label="true" data-scale-by='["stopGap","coalOnly","nuclearOnly"]'>
+    </div>
 
-        <div>
-            <input onchange="changeHandler()" id="both" type="radio" name="target" value="both" checked />
-            <label for="both">Coal and nuclear</label>
-            <input onchange="changeHandler()" id="nuclear" type="radio" name="target" value="nuclear" />
-            <label for="nuclear">Nuclear only (10-year)</label>
-            <input onchange="changeHandler()" id="coal" type="radio" name="target" value="coal" />
-            <label for="coal">Coal only (10-year)</label>
-        </div>
-
-        <div>
-            <input onchange="changeHandler()" id="ten" type="radio" name="length" value="10" checked />
-            <label for="ten">10 years</label>
-            <input onchange="changeHandler()" id="twenty-five" type="radio" name="length" value="25" />
-            <label for="twenty-five">25 years</label>
-        </div>
-    </form>-->
-   <!-- <div class="d3-group" data-sheet-id="1g12PdzUIcaG8diXYQql3RWtB5vcx2gZJvOdF51tsikU" data-nest-by='["category","series"]' data-data-tab="Sheet1" data-dictionary-tab="dictionary" data-variable-y="pb10l_value" data-variable-x="year" data-type="line" data-svg-width="242" data-direct-label="true" data-scale-by='["pb25l_value","pb10l_value", "pc10l_value", "pn10l_value", "cb25l_value", "cb10l_value", "cb10l_value","cn10l_value"]' data-svg-height="140"></div>
     <div class="dashboard">
-        <div class="d3-chart group-1" data-category="capacity" data-series-group='[["coal-total","coal-eligible","coal-ineligible"],["nuclear-total","nuclear-eligible","nuclear-ineligible"]]' data-margin-right="85" data-reset-colors="true"></div>
+        <div class="d3-chart group-0" data-category="capacity" data-series-group='[["coal-total","nuclear-total","gas-total"]]' data-margin-right="85" data-reset-colors="true"></div>
+        <div class="d3-chart group-0" data-category="generation" data-series-group='[["coal","nuclear","gas"]]' data-margin-right="85" data-reset-colors="true"></div>
+        <div class="d3-chart group-0" data-category="emissions" data-series-group='[["carbon"],["sulfur","nitrogen"]]' data-reset-scale='["carbon", "sulfur"]'></div>
+        <div class="d3-chart group-0" data-category="death" data-series-group='"none"'></div>
+        <div class="d3-chart group-0" data-category="costs" data-series-group='"all"'></div>
+        <div class="d3-chart group-0" data-category="jobs" data-series-group='"none"'></div>
+    </div>
 
-        <div class="d3-chart group-1" data-category="generation" data-series-group='all'></div>
-        
-        
-        <div class="d3-chart group-1" data-category="death" data-series-group='"none"'></div>
-        
-        <div class="d3-chart group-1" data-category="emissions" data-series-group='[["carbon"],["sulfur","nitrogen"]]' data-reset-scale='["carbon", "sulfur"]'></div>
-        <div class="d3-chart group-1" data-category="price" data-series-group='[["total_price","lmp","uplift"]]' data-margin-right="75"></div>
-        
-        <div class="d3-chart group-1" data-category="benefits" data-series-group='[["total","end-user", "environmental","generator"]]' data-margin-right="75" data-x-axis-position="zero"></div>
-    </div> -->
     <script type="text/javascript">
         D3Charts.Init();
+            var form = document.querySelector('#forms');
+            form.querySelectorAll('input').forEach(function(each){
+                each.onchange = function(){
+                    D3Charts.UpdateGroup(0, this.value);
+                }
+            });
+        
     </script>  
 </body>
 </html>
