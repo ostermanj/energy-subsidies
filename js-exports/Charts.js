@@ -225,17 +225,18 @@ export const Charts = (function(){
         },
         bindData(){
             // TO DO : THIS HSOULD BE IN CHART PROTOTYPE
-            var eachSeries = this.potentialSeries.selectAll('g.each-series')
+            var eachSeries = this.potentialSeries.selectAll('g.each-series.' + this.config.variableY)
                 .data(d => {
+                    console.log(d);
                     var rtn = d.values.find(each => each.key === this.config.variableY);
                     return rtn !== undefined ? [rtn] : []; // need to acct for possibility
                                                            // that the series is absent given the 
                                                            // config.variableY. if find() returns
                                                            // undefined, data should be empty array
-                    }, d => {
+                    }/*, d => {
                         console.log(d.values[0].series); 
                         return d.values[0].series; 
-                    });
+                    }*/);
             
             // update existing
             eachSeries
@@ -250,7 +251,7 @@ export const Charts = (function(){
 
             var entering = eachSeries.enter().append('g')
                 .attr('class', d => {
-                    return d.values[0].series + ' each-series';
+                    return d.values[0].series + ' each-series ' + this.config.variableY;
                 })
                 .classed('enter', true);
                 
