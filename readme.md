@@ -1,4 +1,4 @@
-#Energy Subsidies
+# Energy Subsidies
 
 This is the code behind the graphs for the blog post [Projecting Impacts of DOE’s “Grid Resiliency Pricing” Proposal](http://www.rff.org/blog/2018/projecting-impacts-doe-s-grid-resiliency-pricing-proposal).
 
