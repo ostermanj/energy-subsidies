@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <title>Energy subsidies</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.12.0/d3.min.js"></script>
+    <script src="https://cdn.polyfill.io/v2/polyfill.js"></script>
+    <script src="dev-js/scripts.js"></script>
+    <link rel="stylesheet" type="text/css" href="http://www.rff.org/sites/all/themes/rff_theme/css/styles.css?p05msg" />
+    <link rel="stylesheet" type="text/css" href="dev-css/styles.css" />
+</head>
+<body style="max-width: 728px;margin: 0 auto;">
+    
+    <!-- data divs -->
+
+<!-- scripts and styles to load before content -->
+
+<script src="https://cdn.polyfill.io/v2/polyfill.js?features=Promise"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.12.0/d3.min.js"></script>
+<link rel="stylesheet" type="text/css" href="css/styles.min.css"/>
+
+<!-- data divs -->
+
+<div class="d3-group" data-sheet-id="1_G9HsJbxRBd7fWTF51Xr8lpxGxxImVcc-rTIaQbEeyA" data-nest-by="[&quot;category&quot;,&quot;series&quot;]" data-data-tab="Sheet1" data-dictionary-tab="dictionary" data-variable-y="pb25l_value" data-variable-x="year" data-type="line" data-svg-width="320" data-direct-label="true"></div>
+<div class="d3-group dashboard" data-sheet-id="1_G9HsJbxRBd7fWTF51Xr8lpxGxxImVcc-rTIaQbEeyA" data-nest-by="[&quot;category&quot;,&quot;series&quot;]" data-data-tab="Sheet1" data-dictionary-tab="dictionary" data-variable-y="pb10l_value" data-variable-x="year" data-type="line" data-svg-width="239" data-direct-label="true" data-scale-by="[&quot;pb25l_value&quot;,&quot;pb10l_value&quot;, &quot;pc10l_value&quot;, &quot;pn10l_value&quot;, &quot;cb25l_value&quot;, &quot;cb10l_value&quot;, &quot;cb10l_value&quot;,&quot;cn10l_value&quot;]" data-svg-height="140" data-margin-bottom="45"></div>
+
+<!-- content -->
+
+<p><em>Editor’s note: On January 8, the Federal Energy Regulatory Commission rejected the Department of Energy’s proposed policy of guaranteeing the profits of coal and nuclear power plants in parts of the US. FERC’s <a href="https://elibrary.ferc.gov/idmws/file_list.asp?document_id=14633130">ruling</a> document cited research by RFF experts that estimated the proposed policy would have resulted in an additional 53 million tons of annual CO<sub>2</sub> emissions and 27,000 cumulative premature deaths by 2045. While there were several estimates of the coal and nuclear plant subsidies that the policy would require, RFF researchers produced the only comprehensive benefit-cost analysis.</p>
+
+<p>This article will appear in the forthcoming issue of </em>Resources<em> magazine, but due to the topic’s timeliness, we are releasing this blog as a preview ahead of the new issue.</em></p>
+<p>
+    The Federal Energy Regulatory Commission is expected to act by January 10, 2018,
+    on the Department of Energy's
+    <a href="https://energy.gov/sites/prod/files/2017/09/f37/Notice%20of%20Proposed%20Rulemaking%20.pdf">
+        notice of proposed rulemaking
+    </a>
+    on “grid resiliency pricing,” which directs the commission to impose rules
+    that would prevent early retirement of coal and nuclear-fired power plants
+    in the Eastern United States. It would guarantee cost recovery and a “fair rate of
+    return on equity” for qualifying merchant generators—ones maintaining 90
+    days of fuel on-site and operating in competitive markets
+    that also have capacity markets. Presumably, plants that did not recover
+    costs and make a fair rate of return would receive subsidies.
+</p>
+<p>
+    Proponents of the proposed rule say it's necessary to ensure the
+    reliability and resiliency of the nation's power grid; opponents call it a
+    bailout for the coal industry. The commission was granted a 30-day
+    extension on the decision in December.
+</p>
+<p>
+    In a
+    <a href="http://www.rff.org/research/publications/costs-and-benefits-saving-unprofitable-generators-simulation-case-study-us">
+        recent working paper</a>, we simulated how the proposed rule would affect energy market outcomess and social
+    welfare, assuming that it does not harm the efficient functioning of markets in ways beyond the subsidization of certain plants. We simulated several versions of the proposal that vary how long
+    the policy is in effect, which type of generators qualify (coal, nuclear,
+    or both), and whether the subsidies guarantee profits as in the proposed
+    rule, or only the costs necessary for continued operation. See the
+    <a href="http://www.rff.org/research/publications/costs-and-benefits-saving-unprofitable-generators-simulation-case-study-us">
+        working paper
+    </a>
+    for more information on our interpretation and assumptions.
+</p>
+<p>
+    Below, we summarize the results of the main scenario,
+    which reflects our interpretation of the proposed rule and assumes that
+    it remains in effect from 2020 through at least 2045. In the main scenario,
+    the rule guarantees the profitability of both coal and nuclear units.
+</p>
+<p>
+    Below that, at the bottom of the post, you can interactively explore the
+    effects of other scenarios.
+</p>
+<p>
+    All of the values in these charts are in comparison to a business-as-usual
+    projection of a future without the proposed rule. That is, the charts show
+    the <em>effects</em> of the proposed rule.
+</p>
+<h2>
+    Main scenario
+</h2>
+<noscript><p><strong>Please enable JavaScript and reload to see the interactive charts. We're showing placeholder images for now.</strong></p></noscript>
+<!-- CHART -->
+<div class="d3-chart group-0" data-category="generation" data-series="all" data-series-group="all">
+<p><strong>Power generation</strong></p>
+<img src="http://www.rff.org/files/generation.png" alt="Placeholder image for interactive chart of power generation"/>
+<p><strong>Placeholder image only. The charts failed to load. Please use an up-to-date browser and enable JavaScript</strong></p>
+</div>
+<!-- CHART -->
+<div class="d3-chart group-0" data-category="emissions" data-series="all" data-series-group="[[&quot;carbon&quot;],[&quot;sulfur&quot;,&quot;nitrogen&quot;]]" data-reset-scale="[&quot;carbon&quot;, &quot;sulfur&quot;]">
+<p><strong>Greenhouse gas emissions</strong></p>
+<img src="http://www.rff.org/files/greenhouse-gas-0.png" alt="Placeholder image for interactive chart of greenhouse gas emissions"/>
+<img src="http://www.rff.org/files/greenhouse-gas-1.png" alt="Placeholder image for interactive chart of greenhouse gas emissions"/>
+</div>
+
+<p>
+    In our scenario guaranteeing profits to both coal and nuclear plants for 25
+    years, the amount of power generated by natural gas declines due to more
+    coal and nuclear generation. Because nuclear generation increases almost
+    twice as much as coal generation in 2025, carbon emissions decrease
+    slightly at first, but they increase in later years as older nuclear plants
+    retire in spite of the subsidies based on the assumption that they cannot
+    renew their operating licenses beyond age 60. Sulfur dioxide and nitrogen
+    oxide emissions, however, increase immediately from the increase in
+    coal-fired power generation and stay elevated throughout the life of the
+    policy.
+</p>
+<!-- CHART -->
+<div class="d3-chart group-0" data-category="death" data-series="all" data-series-group="&quot;none&quot;">
+<p><strong>Premature deaths</strong></p>
+<img src="http://www.rff.org/files/deaths.png" alt="Placeholder image for interactive chart of premature deaths attributable to greenhouse gas emissions"/>
+</div>
+
+<p>
+    An increase in sulfur dioxide and nitrogen oxide emissions would take a
+    toll on human health. We find that the policy, under the main scenario,
+    would increase premature deaths by 840 in 2025, 1,139 in 2035, and 1,291 in
+    2045. The total number of premature deaths over the course of 25 years
+    would be 26,896.
+</p>
+<!-- CHART -->
+<div class="d3-chart group-0" data-category="price" data-series="all" data-series-group="[[&quot;total_price&quot;,&quot;lmp&quot;,&quot;uplift&quot;]]" data-margin-right="75">
+<p><strong>Price effects</strong></p>
+<img src="http://www.rff.org/files/price-effects.png" alt="Placeholder image for interactive chart of price effects"/>
+</div>
+
+<p>
+    The proposed policy would affect electricity prices in two main ways.
+    First, the proposal calls for charges to be assessed to cover the costs of
+    the subsidies. We assume that these would be charged to consumers as a
+    per-MWh charge, also known as an “uplift.” In 2025, the total subsidy
+    amount is $7.6 billion. Second, the policy decreases the average underlying
+    wholesale electricity price, but not enough to offset the tariffs. The sum
+    of the two, the total price effect, is an average increase of $1.66 per
+    megawatt-hour to consumers in 2025 across the Eastern and Midwestern United States and
+    Canada. This amounts to $18 per year for the average residential
+    electricity customer. The price increase resulting from the policy declines
+    over the following years.
+</p>
+
+<!-- CHART -->
+<div class="d3-chart group-0" data-category="benefits" data-series="all" data-series-group="[[&quot;total&quot;,&quot;end-user&quot;, &quot;environmental&quot;,&quot;generator&quot;]]" data-margin-right="75" data-x-axis-position="zero">
+<p><strong>Net benefits</strong></p>
+<img src="http://www.rff.org/files/net-benefits.png" alt="Placeholder image for interactive chart of net benefits"/>
+</div>
+<p>
+    Under our main scenario, the total net benefits of the proposed policy are
+    negative, amounting to a cumulative cost of $263 billion over 25 years. The
+    total net benefits are the sum of net benefits to electricity end-users,
+    the environment and human health, generator profit, and government revenue.
+</p>
+<p>
+    Relative to business as usual, generator profit is higher in 2025 but lower
+    in 2035 and 2045 because the policy decreases the amount of lower-cost
+    generators and decreases wholesale prices.
+</p>
+<p>
+    The net non-environmental benefit for electricity users is negative
+    throughout the life of the policy. In 2025 the proposed policy would cost
+    consumers $5 billion. That cost lessens in 2035 and 2045 but amounts to a
+    cumulative $72 billion costs to electricity users over 25 years.
+</p>
+<p>
+    The environmental calculation comprises the net benefits of the change in
+    carbon emissions and the costs of increased morbidity and premature
+    mortality from sulfur dioxide and nitrogen oxide emissions. It is decidedly
+    negative (a cost of $9 billion in 2025 and cumulative costs of $217 billion
+    over the life of the policy). Most of this cost comes from increased
+    premature US deaths from sulfur dioxide and nitrogen oxide emissions.
+</p>
+
+<h2>Other scenarios</h2>
+<p>
+    Our working paper includes several variations of the proposal, including a
+    10-year lifespan for the policy instead of 25, policies that support only
+    coal generators or only nuclear, and policies that only guarantee recovery
+    of the costs of continued operation (“going-forward” costs) rather than
+    guaranteeing profits. We find that the only policies with positive net
+    benefits are the ones that support only nuclear plants.
+</p>
+<p>
+    Explore the results from those other scenarios in the charts below.
+</p>
+<p><strong>Settings</strong></p>
+
+<!-- settings input form -->
+    <form id="forms">
+        <div>
+            <input id="profit" type="radio" name="type" value="profit" checked/>
+            <label for="profit">Profit guarantee</label>
+            <input id="cost" type="radio" name="type" value="cost"/>
+            <label for="profit">Going-forward costs only</label>
+        </div>
+
+        <div>
+            <input id="both" type="radio" name="target" value="both" checked/>
+            <label for="both">Coal and nuclear</label>
+            <input id="nuclear" type="radio" name="target" value="nuclear"/>
+            <label for="nuclear">Nuclear only (10-year)</label>
+            <input id="coal" type="radio" name="target" value="coal"/>
+            <label for="coal">Coal only (10-year)</label>
+        </div>
+
+        <div>
+            <input id="ten" type="radio" name="length" value="10" checked/>
+            <label for="ten">10 years</label>
+            <input id="twenty-five" type="radio" name="length" value="25"/>
+            <label for="twenty-five">25 years</label>
+        </div>
+    </form>
+
+<!-- CHARTS -->
+<div class="dashboard"> 
+ <div class="d3-chart group-1" data-category="capacity" data-series="all" data-series-group="[[&quot;coal-total&quot;,&quot;coal-eligible&quot;,&quot;coal-ineligible&quot;],[&quot;nuclear-total&quot;,&quot;nuclear-eligible&quot;,&quot;nuclear-ineligible&quot;]]" data-margin-right="90" data-reset-colors="true"></div>
+
+<div class="d3-chart group-1" data-category="generation" data-series="all" data-series-group="all">
+<img src="http://www.rff.org/files/energy-subsidy-dashboard.png" alt="Placeholder image for interactive dashboard of charts"/>
+</div>
+        
+    <div class="d3-chart group-1" data-category="death" data-series="all" data-series-group="&quot;none&quot;"></div>
+    
+    <div class="d3-chart group-1" data-category="emissions" data-series="all" data-series-group="[[&quot;carbon&quot;],[&quot;sulfur&quot;,&quot;nitrogen&quot;]]" data-reset-scale="[&quot;carbon&quot;, &quot;sulfur&quot;]"></div>
+    <div class="d3-chart group-1" data-category="price" data-series="all" data-series-group="[[&quot;total_price&quot;,&quot;lmp&quot;,&quot;uplift&quot;]]" data-margin-right="75"></div>
+    
+    <div class="d3-chart group-1" data-category="benefits" data-series="all" data-series-group="[[&quot;total&quot;,&quot;end-user&quot;, &quot;environmental&quot;,&quot;generator&quot;]]" data-margin-right="75" data-x-axis-position="zero"></div>
+</div>
+
+<!-- scripts to load after DOM content loaded -->
+<script src="js/scripts.js"></script>
+<script src="js/energy-subsidies.js"></script>
+
+</body>
+</html>

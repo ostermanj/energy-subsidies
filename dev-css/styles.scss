@@ -1,0 +1,289 @@
+//colors
+$dark_gray: #58585b;
+$a11y_gray: #767676;
+$blue: #041937;
+$green: #527E5A;
+$gold: #C99140;
+$serif: "Calluna W01",Georgia,"Times New Roman","DejaVu Serif",serif;
+
+.relative {
+    position: relative;
+}
+.flex {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.display-none {
+    display: none;
+}
+
+.dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    .d3-chart{
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        > div {
+            margin: 0 auto;
+            text-align: center;
+        }
+        > p {
+            font-size: 0.8em;
+            max-width: 236px;
+            text-align: center;
+            margin: 10px auto;
+        }
+    }
+}
+
+
+.d3-chart {
+    margin-bottom: 1em;
+    .data-point {
+        stroke-width: 2px;
+        stroke: white;
+        cursor: pointer;
+    }
+    
+    .color-0 {
+        .line, &.line {
+            stroke: $blue;
+        }
+        .series-label, .data-point {
+            fill: $blue;
+        }
+        &.area-line {
+            fill: rgba($blue, 0.3);
+        }
+    }
+    .color-1 {
+        .line, &.line {
+            stroke: $green;
+        }
+        .series-label, .data-point {
+            fill: $green;
+        }
+        &.area-line {
+            fill: rgba($green, 0.3);
+        }
+    }
+    .color-2 {
+        .line, &.line {
+            stroke: $gold;
+        }
+        .series-label, .data-point {
+            fill: $gold;
+        }
+        &.area-line {
+            fill: rgba($gold, 0.3);
+        }
+    }
+    .color-3 {
+        .line, &.line {
+            stroke: lighten($blue, 50%);
+        }
+        .series-label, .data-point {
+            fill: lighten($blue, 50%);
+        }
+        &.area-line {
+            fill: lighten(rgba($gold, 0.3), 50%);
+        }
+    }
+    & .line {
+        stroke-width: 2px;
+        stroke: black;
+    }
+    .has-tooltip {
+        cursor:pointer;
+    }
+    svg {
+        a, a:visited, a:active {
+            text-decoration: none;
+
+        }
+        a[focusable="false"] {
+            cursor: default;
+        }
+        &.heading-info {
+            width: 25px;
+            height: 25px;
+            position: absolute;
+            bottom: -2px;
+            text {
+                font-size: 0.8em;
+                /*transform: translate(4px,16px); */
+            }
+        }
+        path {
+            fill: none;
+            
+
+        }
+        text {
+            font-family: $serif;
+            
+                .info-mark, &.info-mark {
+                    font-size: 0.8em;
+                    font-weight: bold;
+                    fill: $a11y_gray;
+                }
+            &.units, &.series-label {
+                font-size: 12px;
+                fill: $dark_gray;
+               
+            }
+            &.series-0 {
+                fill: $blue;
+            }
+             &.series-1 {
+                fill: $green;
+            }
+             &.series-2 {
+                fill: $gold;
+            }
+        }
+        .axis {
+            line, path {
+                stroke: $a11y_gray;
+            }
+            text {
+                fill: $a11y_gray;
+                font-size: 11px;
+            }
+            &.repeated path.domain {
+                display:none;
+            }
+
+        }
+        .y-axis {
+            .domain {
+                display:none;
+            }
+            .tick.zero {
+                text {
+                    font-weight: bold;
+                    fill: $blue;
+                }
+            }
+        }
+    }
+}
+
+/* specific to the demo */
+
+#forms {
+    display: flex;
+    flex-wrap: wrap;
+    > div {
+        width: 33%;
+        flex-grow: 1;
+        flex-shrink: 1;
+        input {
+            top: 0;
+            cursor: pointer;
+            &[disabled] {
+                cursor: not-allowed;
+            }
+        }
+        label {
+            margin-top: 0;
+            padding-left: 1.6em;
+            &.disabled {
+                color: $a11y_gray;
+                cursor: not-allowed;
+            }
+        }
+    }
+}
+
+.x-axis .tick:first-of-type {
+    display: none;
+}
+
+.data-point:first-of-type {
+    display: none;
+}
+
+.d3-tip.color-0 {
+    border-color: $blue;
+    &:after {
+        color: $blue;
+    }
+}
+.d3-tip.color-1 {
+    border-color: $green;
+    &:after {
+        color: $green;
+    }
+}
+.d3-tip.color-2 {
+    border-color: $gold;
+    &:after {
+        color: $gold;
+    }
+}
+.d3-tip.color-3 {
+    border-color: lighten($blue, 50%);;
+    &:after {
+        color: lighten($blue, 50%);
+    }
+}
+/* d3-tip css TO DO  add as import or separate file */
+
+.d3-tip {
+    padding: 7px;
+    background: rgba(255,255,255,0.9);
+    color: $dark_gray;
+    opacity: 0;
+    transition: opacity 0.5s linear;
+    font-size: 75%;
+    line-height: 120%;
+    z-index: 9;
+    max-width: 180px;
+    border: 2px solid $a11y_gray;
+
+    &.label-tip {
+        border-radius: 10px;
+        padding: 4px 7px;
+    }
+    
+    &:after {
+        box-sizing: border-box;
+        display: inline;
+        font-size: 10px;
+        width: 100%;
+        line-height: 1;
+        color: $dark_gray;
+        position: absolute;
+        pointer-events: none;
+    }
+    &.n:after {
+        content: "\25BC";
+        margin: -1px 0 0;
+        top: 100%;
+        left: 0;
+        text-align: center;
+    }
+    &.e:after {
+        content: "\25C0 \FE0E";
+        margin: -4px 0 0;
+        top: 50%;
+        left: -8px;
+    }
+    &.s:after {
+        content: "\25B2";
+        margin: 0 0 1px 0;
+        top: -8px;
+        left: 0;
+        text-align: center;
+    }
+    &.w:after {
+        content: "\25B6 \FE0E";
+        margin: -4px 0 0 -1px;
+        top: 50%;
+        left: 100%;
+    }
+}
